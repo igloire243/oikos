@@ -57,6 +57,7 @@
                     ['plans.index', 'Offres', 'tag', 'plans.*', null],
                     ['factures.index', 'Factures', 'receipt', 'factures.*', $facturesAEncaisser ?: null],
                     ['demandes.index', 'Demandes', 'inbox', 'demandes.*', $nouvellesDemandes ?: null],
+                    ['paiement.config', 'Paiement', 'wallet', 'paiement.*', null],
                     ['reglages.index', 'Réglages', 'sliders-horizontal', 'reglages.*', null],
                 ];
             @endphp

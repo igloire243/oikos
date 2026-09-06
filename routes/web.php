@@ -8,6 +8,7 @@ use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\FactureController;
 use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\MotDePasseController;
+use App\Http\Controllers\PaiementConfigController;
 use App\Http\Controllers\PaiementEnLigneController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReglageController;
@@ -147,6 +148,10 @@ Route::prefix('console')->group(function () {
 
         Route::get('/reglages', [ReglageController::class, 'index'])->name('reglages.index');
         Route::put('/reglages', [ReglageController::class, 'enregistrer'])->name('reglages.enregistrer');
+
+        // L'AGRÉGATEUR MOBILE MONEY, CONFIGURABLE DEPUIS LA CONSOLE (voir ConfigPasserelle).
+        Route::get('/paiement', [PaiementConfigController::class, 'edit'])->name('paiement.config');
+        Route::put('/paiement', [PaiementConfigController::class, 'update'])->name('paiement.config.update');
 
         // LES FACTURES ET LEUR ENCAISSEMENT. Un paiement ne solde rien par lui-même : on
         // enregistre des versements, et c'est la FACTURE qui décide quand elle est couverte —
