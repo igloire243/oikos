@@ -35,7 +35,7 @@ return [
 
     // Taux indicatif servant à afficher l'équivalent en francs quand un plan ne le porte pas.
     // Indicatif, jamais utilisé pour calculer une facture : une facture se libelle dans UNE devise.
-    'taux_indicatif_cdf' => (int) env('PAIEMENT_TAUX_CDF', 2800),
+    'taux_indicatif_cdf' => (int) env('PAIEMENT_TAUX_CDF', 2300),
 
     // Ce qu'on promet au client sur la page « Comment payer ». À tenir : c'est sur cette phrase
     // qu'il jugera le service le jour où son accès est bloqué.

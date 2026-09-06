@@ -51,7 +51,7 @@ class Abonnement extends Model
         'installation_id', 'plan_id',
         'beneficiaire_type', 'beneficiaire_ref', 'payeur_type', 'payeur_ref',
         'statut', 'essai_fin', 'periode_debut', 'periode_fin', 'grace_fin',
-        'resilie_le', 'motif_resiliation',
+        'resilie_le', 'motif_resiliation', 'promo_decembre_annee',
     ];
 
     protected $casts = [
@@ -60,6 +60,7 @@ class Abonnement extends Model
         'periode_fin' => 'datetime',
         'grace_fin' => 'datetime',
         'resilie_le' => 'datetime',
+        'promo_decembre_annee' => 'integer',
     ];
 
     public function installation(): BelongsTo

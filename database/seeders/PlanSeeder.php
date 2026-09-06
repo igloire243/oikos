@@ -6,189 +6,195 @@ use App\Models\Plan;
 use Illuminate\Database\Seeder;
 
 /**
- * LES OFFRES DE DÉPART — une licence, des accès, et un raccourci pour l'église seule.
+ * LES OFFRES DE DÉPART — trois natures, trois paliers, et le cas de l'église seule.
  *
- * LES PRIX SONT DES VALEURS DE TRAVAIL. Ajustez-les avant la première vente ; ce qui compte ici
- * est la structure, pas les montants. Le taux retenu pour les francs est d'environ 2 800 FC pour
- * un dollar — à revoir, une grille tarifaire qui traîne un vieux taux perd de l'argent en silence.
+ * LES PRIX SONT DES VALEURS DE TRAVAIL, ajustables ensuite dans la console sans toucher au code
+ * (voir PlanController). Taux retenu pour l'équivalent en francs : 1 USD ≈ 2 300 CDF. Un taux qui
+ * traîne fait perdre de l'argent en silence — à revoir avant la première vente.
  *
- * POURQUOI LA LICENCE SE PAIE À L'ANNÉE ET LES ACCÈS AU MOIS
- * -----------------------------------------------------------
- * Parce qu'un accès ne vaut rien sans la licence qui le porte. Si la licence était mensuelle, une
- * église qui achète son accès à dix jours de l'échéance de la vision paierait un mois entier pour
- * dix jours d'usage : le reste tomberait avec la licence, sans qu'elle y soit pour rien. À l'année,
- * la licence est un cadre large dans lequel les mois d'accès se rangent — le cas de bord ne
- * disparaît pas, mais il devient rare, et il se traite au prorata plutôt qu'au coup par coup.
+ * QUI PAIE QUOI
+ * -------------
+ *   LICENCE   payée par la VISION, à l'année, une fois pour toute la structure. Son prix suit la
+ *             TAILLE du réseau (paliers_taille), et son palier fixe le PLAFOND de ce que les
+ *             entités peuvent souscrire (plafond_acces). Elle inclut l'espace de la vision.
  *
- * Les montants annuels valent DIX mois de l'ancien prix mensuel, pas douze : l'engagement d'un an
- * doit se payer quelque part, sinon il n'y a aucune raison de l'accepter.
+ *   ACCÈS     payé au MOIS par chaque ÉGLISE / CELLULE (ouvre l'espace de l'église ET l'espace
+ *             Département — le département ne paie jamais séparément) et par chaque ANTENNE
+ *             (ouvre l'espace antenne). Deux grilles distinctes : église et antenne.
  *
- * L'ÉGLISE SEULE RESTE AU MOIS. Rien n'est en dessous d'elle, donc aucun accès n'a à s'aligner sur
- * quoi que ce soit — et un montant annuel demandé d'un coup à une petite assemblée est un refus.
+ *   COMBINÉE  l'ÉGLISE SEULE, sans réseau. Elle paie DEUX lignes : une licence réduite à l'année
+ *             (qui joue le rôle de licence pour la cascade et finance l'hébergement) + un accès
+ *             mensuel « église seule » à plancher plus élevé (elle a tout l'espace vision pour
+ *             elle). Quotas verrouillés : 0 antenne, 1 extension.
  *
- * COMMENT LES TROIS FAMILLES SE RÉPONDENT
- * ----------------------------------------
- *   LICENCE   payée par la vision, une fois pour toute la structure. Son prix suit la TAILLE du
- *             réseau, et son palier fixe le PLAFOND de ce que les entités peuvent souscrire.
- *             Elle inclut l'espace de la vision : le sommet ne paie pas deux fois.
+ * LES CLÉS DE FONCTIONNALITÉS sont celles de config/modules.php, et elles portent leur espace :
+ * `superadmin.reports` (vision) ≠ `secteur.rapports` (église) ≠ `antenne.rapports`. Seules les clés
+ * VENDABLES comptent ici (les invendables — paramètres, sécurité, messagerie déléguable — sont
+ * toujours ouvertes et ignorées à l'émission de la licence).
  *
- *   ACCÈS     payé par chaque antenne, église ou cellule, pour son propre usage. Prix unique quel
- *             que soit le niveau : une cellule et une antenne qui veulent les mêmes modules paient
- *             le même prix. C'est ce qui rend la grille explicable en une phrase.
- *
- *   COMBINÉE  l'église seule, sans réseau au-dessus d'elle. Licence et accès en un seul prix,
- *             volontairement inférieur à la somme des deux : c'est le client le plus fréquent et
- *             le plus sensible au montant affiché.
- *
- * POURQUOI LA LICENCE STARTER N'EST PAS BRADÉE
- * ---------------------------------------------
- * Elle est obligatoire : rien ne fonctionne sans elle. Trop chère, elle devient un péage à
- * l'entrée qui décourage avant que le client ait vu la valeur du produit ; trop basse, elle laisse
- * croire que l'essentiel se paie ailleurs. Le revenu suit la taille par deux chemins — les paliers
- * de la licence, et le nombre d'accès vendus en dessous.
- *
- * LES CLÉS DE FONCTIONNALITÉS NE SONT PAS INVENTÉES : ce sont les treize modules que
- * Génération Joël sait déjà faire respecter (app/Support/SecteurMenu.php + CheckSecteurPermission),
- * et que config/modules.php nomme en clair. Un palier qui n'ouvre pas la trésorerie ne demande
- * aucun code neuf — une clé en moins dans le JSON.
+ * `fonctionnalites = null` = « tous les modules de la ou des familles que cette nature ouvre, y
+ * compris ceux ajoutés plus tard ». À n'utiliser que pour une LICENCE (une seule famille : vision).
+ * Pour un ACCÈS ou une COMBINÉE, on ÉNUMÈRE — sinon un accès église Premium ouvrirait aussi les
+ * écrans d'antenne.
  */
 class PlanSeeder extends Seeder
 {
-    // LES CLÉS SONT CELLES DU PRODUIT, ET ELLES DIFFÈRENT SELON L'ESPACE.
-    //
-    // Côté vision, la notion « rapports » s'appelle `reports` ; côté secteur, `rapports`. Ce ne
-    // sont pas deux orthographes de la même chose : ce sont deux pages, dans deux espaces, avec
-    // deux middlewares distincts (`permission:` et `secteur.module:`). Les mélanger produit une
-    // offre qui vend un module qu'aucun code n'ouvrira.
-
-    /** ESPACE VISION — le socle du siège : les comptes, le réseau, le calendrier, les bilans.
-     *  transferts + profils spirituels suivent le réseau (superadmin.entites) : ce sont ses
-     *  sous-modules, découpés pour pouvoir les déléguer un par un. */
+    // ---- ESPACE VISION (LICENCE + COMBINÉE) ------------------------------------------------
     private const VISION_STARTER = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.transferts', 'superadmin.profils',
-        'superadmin.programs', 'superadmin.reports',
+        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
+        'superadmin.communications',
     ];
-
-    /** ESPACE VISION — le socle, plus la diffusion et les médias. */
     private const VISION_STANDARD = [
+        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
+        'superadmin.communications', 'superadmin.media', 'superadmin.finances',
+    ];
+    private const VISION_PREMIUM = [
         'superadmin.users', 'superadmin.entites', 'superadmin.transferts', 'superadmin.profils',
-        'superadmin.programs', 'superadmin.reports',
+        'superadmin.programs', 'superadmin.finances', 'superadmin.reports',
         'superadmin.communications', 'superadmin.media',
     ];
 
-    /**
-     * LE SOCLE D'UNE ENTITÉ — et il traverse DEUX espaces.
-     *
-     * Le fichier des membres et les départements vivent dans l'espace de l'église ; l'appel nominal,
-     * lui, est dans l'espace du DÉPARTEMENT — c'est l'écran du dimanche, celui qu'un chef de chorale
-     * ouvre sur son téléphone. Vendre `secteur.programmes` sans `department.plannings` livrerait un
-     * planning que personne ne peut pointer.
-     */
-    private const ENTITE_STARTER = [
-        'secteur.membres', 'secteur.equipes', 'secteur.cultes', 'secteur.programmes',
-        'department.equipe', 'department.plannings',
-        // Le socle de coordination d'une ANTENNE (le même accès sert antenne, église et cellule).
-        'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.services', 'antenne.rapports',
+    // ---- ACCÈS ÉGLISE / CELLULE : espace de l'église + espace Département ------------------
+    private const EGLISE_STARTER = [
+        'secteur.membres', 'secteur.cultes', 'secteur.tresorerie', 'secteur.rapports',
+        'secteur.equipes', 'secteur.messagerie',
+        'department.equipe', 'department.plannings', 'department.rapports',
+    ];
+    private const EGLISE_STANDARD = [
+        'secteur.membres', 'secteur.cultes', 'secteur.tresorerie', 'secteur.rapports',
+        'secteur.equipes', 'secteur.messagerie', 'secteur.programmes', 'secteur.prieres',
+        'secteur.visites', 'secteur.activites', 'secteur.discipulariat', 'secteur.medias',
+        'secteur.discipline',
+        'department.equipe', 'department.plannings', 'department.rapports',
+        'department.programmes', 'department.ressources',
+    ];
+    private const EGLISE_PREMIUM = [
+        'secteur.membres', 'secteur.transferts', 'secteur.visites', 'secteur.prieres',
+        'secteur.cultes', 'secteur.programmes', 'secteur.activites', 'secteur.discipulariat',
+        'secteur.equipes', 'secteur.discipline', 'secteur.tresorerie', 'secteur.rapports',
+        'secteur.medias', 'secteur.messagerie',
+        'department.equipe', 'department.plannings', 'department.programmes', 'department.rapports',
+        'department.ressources',
     ];
 
-    /** LE SOCLE, plus le suivi pastoral, les activités et les bilans des trois espaces. */
-    private const ENTITE_STANDARD = [
-        'secteur.membres', 'secteur.transferts', 'secteur.equipes', 'secteur.cultes', 'secteur.programmes',
-        'secteur.activites', 'secteur.visites', 'secteur.prieres', 'secteur.rapports',
-        'secteur.messagerie',
-        'department.equipe', 'department.plannings', 'department.programmes', 'department.rapports',
-        // L'antenne au complet : transferts, visites d'extensions, réunions mensuelles, dossiers
-        // disciplinaires des cadres, départements, finances, communications.
+    // ---- ACCÈS ANTENNE ------------------------------------------------------------------------
+    private const ANTENNE_STARTER = [
+        'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports',
+        'antenne.services', 'antenne.communications',
+    ];
+    private const ANTENNE_STANDARD = [
+        'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports',
+        'antenne.services', 'antenne.communications', 'antenne.pastoral', 'antenne.visites',
+        'antenne.reunions', 'antenne.departements', 'antenne.finances',
+    ];
+    private const ANTENNE_PREMIUM = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.transferts',
         'antenne.pastoral', 'antenne.visites', 'antenne.services', 'antenne.departements',
-        'antenne.finances', 'antenne.rapports', 'antenne.reunions', 'antenne.dossiers', 'antenne.communications',
+        'antenne.finances', 'antenne.rapports', 'antenne.reunions', 'antenne.dossiers',
+        'antenne.communications',
     ];
 
     public function run(): void
     {
-        foreach ([...$this->licences(), ...$this->acces(), ...$this->egliseSeule(), $this->fondateur()] as $plan) {
-            Plan::updateOrCreate(['code' => $plan['code']], $plan);
+        $offres = array_merge(
+            $this->licencesVision(),
+            $this->accesEglise(),
+            $this->accesAntenne(),
+            $this->egliseSeule(),
+            [$this->fondateur()],
+        );
+
+        $codes = array_column($offres, 'code');
+
+        foreach ($offres as $offre) {
+            Plan::updateOrCreate(['code' => $offre['code']], $offre);
         }
+
+        // Retrait des offres d'un ancien jeu (LICENCE_STARTER, ACCES_STARTER, SEULE_*…) — mais
+        // SEULEMENT si elles n'ont jamais été vendues. Une offre rattachée à un abonnement reste :
+        // c'est elle qui explique ce que le client a payé (clé étrangère + valeur d'historique).
+        Plan::whereNotIn('code', $codes)
+            ->whereDoesntHave('abonnements')
+            ->delete();
     }
 
     /**
-     * LES LICENCES. `prix_usd_cents` porte le PREMIER palier — celui qu'on annonce précédé d'« à
-     * partir de ». La grille complète vit dans `paliers_taille`, et son dernier échelon a un `max`
-     * nul : c'est lui qui attrape les réseaux qui dépassent tout, sans quoi un client de deux cents
-     * églises ne trouverait aucun prix.
-     *
-     * La taille se compte en ENTITÉS DÉCLARÉES par l'installation — antennes et églises — hors
-     * vision. C'est un nombre que la console connaît déjà, donc vérifiable, et non un chiffre que
-     * le client s'attribue lui-même.
+     * LICENCE VISION — annuel. `prix_usd_cents` porte le premier échelon (« à partir de »), la
+     * grille complète vit dans `paliers_taille`. Dernier échelon `max = null` : il attrape les
+     * réseaux qui dépassent tout. La taille se compte en entités déclarées (antennes + églises),
+     * hors vision — un nombre que la console connaît, pas que le client s'attribue.
      */
-    private function licences(): array
+    private function licencesVision(): array
     {
         return [
             [
-                'code' => 'LICENCE_STARTER',
+                'code' => 'LICENCE_VISION_STARTER',
                 'nature' => Plan::LICENCE,
                 'palier' => Plan::STARTER,
                 'niveau' => 'VISION',
-                'nom' => 'Licence Starter',
+                'nom' => 'Licence Vision — Starter',
                 'argumentaire' => "Met le système en service pour toute la structure et ouvre l'espace "
-                    ."de la vision. Pour un réseau qui démarre et veut d'abord voir tourner l'essentiel.",
-                'prix_usd_cents' => 25000,
-                'prix_cdf' => 700000,
+                    ."de la vision : comptes, réseau, calendrier, bilans et communications.",
+                'prix_usd_cents' => 15000,
+                'prix_cdf' => 345000,
                 'paliers_taille' => [
-                    ['max' => 5, 'prix_usd_cents' => 25000, 'prix_cdf' => 700000],
-                    ['max' => 20, 'prix_usd_cents' => 45000, 'prix_cdf' => 1260000],
-                    ['max' => null, 'prix_usd_cents' => 75000, 'prix_cdf' => 2100000],
+                    ['max' => 10, 'prix_usd_cents' => 15000, 'prix_cdf' => 345000],
+                    ['max' => 50, 'prix_usd_cents' => 26000, 'prix_cdf' => 598000],
+                    ['max' => 90, 'prix_usd_cents' => 40000, 'prix_cdf' => 920000],
+                    ['max' => null, 'prix_usd_cents' => 60000, 'prix_cdf' => 1380000],
                 ],
-                'plafond_acces' => Plan::STANDARD,
+                'plafond_acces' => Plan::STARTER,
                 'periode_mois' => 12,
-                'quotas' => ['antennes' => null, 'extensions' => null],
+                'quotas' => null,
                 'fonctionnalites' => self::VISION_STARTER,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 10,
             ],
             [
-                'code' => 'LICENCE_STANDARD',
+                'code' => 'LICENCE_VISION_STANDARD',
                 'nature' => Plan::LICENCE,
                 'palier' => Plan::STANDARD,
                 'niveau' => 'VISION',
-                'nom' => 'Licence Standard',
-                'argumentaire' => "Rapports consolidés sur l'ensemble du réseau, médias, et accès "
-                    .'Premium autorisé pour les entités qui en ont besoin.',
-                'prix_usd_cents' => 40000,
-                'prix_cdf' => 1120000,
+                'nom' => 'Licence Vision — Standard',
+                'argumentaire' => "Ajoute les médias de la vision et la trésorerie consolidée du réseau. "
+                    .'Autorise un accès Standard pour les entités.',
+                'prix_usd_cents' => 26000,
+                'prix_cdf' => 598000,
                 'paliers_taille' => [
-                    ['max' => 5, 'prix_usd_cents' => 40000, 'prix_cdf' => 1120000],
-                    ['max' => 20, 'prix_usd_cents' => 70000, 'prix_cdf' => 1960000],
-                    ['max' => null, 'prix_usd_cents' => 110000, 'prix_cdf' => 3080000],
+                    ['max' => 10, 'prix_usd_cents' => 26000, 'prix_cdf' => 598000],
+                    ['max' => 50, 'prix_usd_cents' => 44000, 'prix_cdf' => 1012000],
+                    ['max' => 90, 'prix_usd_cents' => 66000, 'prix_cdf' => 1518000],
+                    ['max' => null, 'prix_usd_cents' => 100000, 'prix_cdf' => 2300000],
                 ],
-                'plafond_acces' => Plan::PREMIUM,
+                'plafond_acces' => Plan::STANDARD,
                 'periode_mois' => 12,
-                'quotas' => ['antennes' => null, 'extensions' => null],
+                'quotas' => null,
                 'fonctionnalites' => self::VISION_STANDARD,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 11,
             ],
             [
-                'code' => 'LICENCE_PREMIUM',
+                'code' => 'LICENCE_VISION_PREMIUM',
                 'nature' => Plan::LICENCE,
                 'palier' => Plan::PREMIUM,
                 'niveau' => 'VISION',
-                'nom' => 'Licence Premium',
-                'argumentaire' => 'Tous les modules au niveau de la vision, accompagnement à la mise '
-                    .'en place, formation des responsables et sauvegardes suivies.',
-                'prix_usd_cents' => 60000,
-                'prix_cdf' => 1680000,
+                'nom' => 'Licence Vision — Premium',
+                'argumentaire' => 'Tous les modules au niveau de la vision : transferts sur tout le parc, '
+                    .'profils spirituels, accompagnement et sauvegardes suivies. Autorise un accès Premium.',
+                'prix_usd_cents' => 40000,
+                'prix_cdf' => 920000,
                 'paliers_taille' => [
-                    ['max' => 5, 'prix_usd_cents' => 60000, 'prix_cdf' => 1680000],
-                    ['max' => 20, 'prix_usd_cents' => 100000, 'prix_cdf' => 2800000],
-                    ['max' => null, 'prix_usd_cents' => 160000, 'prix_cdf' => 4480000],
+                    ['max' => 10, 'prix_usd_cents' => 40000, 'prix_cdf' => 920000],
+                    ['max' => 50, 'prix_usd_cents' => 69000, 'prix_cdf' => 1587000],
+                    ['max' => 90, 'prix_usd_cents' => 105000, 'prix_cdf' => 2415000],
+                    ['max' => null, 'prix_usd_cents' => 156000, 'prix_cdf' => 3588000],
                 ],
                 'plafond_acces' => Plan::PREMIUM,
                 'periode_mois' => 12,
-                'quotas' => ['antennes' => null, 'extensions' => null],
-                'fonctionnalites' => null,
+                'quotas' => null,
+                'fonctionnalites' => null,   // LICENCE : une seule famille (vision), null = tout, futurs compris
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 12,
@@ -196,67 +202,63 @@ class PlanSeeder extends Seeder
         ];
     }
 
-    /**
-     * LES ACCÈS. `niveau = TOUS` : une antenne et une cellule achètent le même palier au même prix.
-     * C'est le choix qui rend la grille lisible — le prix suit ce dont on se sert, pas la place
-     * qu'on occupe dans l'organigramme.
-     */
-    private function acces(): array
+    /** ACCÈS ÉGLISE / CELLULE — mensuel. Ouvre l'espace de l'église ET l'espace Département. */
+    private function accesEglise(): array
     {
         return [
             [
-                'code' => 'ACCES_STARTER',
+                'code' => 'ACCES_EGLISE_STARTER',
                 'nature' => Plan::ACCES,
                 'palier' => Plan::STARTER,
-                'niveau' => 'TOUS',
-                'nom' => 'Accès Starter',
-                'argumentaire' => 'Le socle : les membres, les départements, les cultes et les plannings '
-                    ."avec l'appel nominal. De quoi tenir une assemblée au quotidien.",
-                'prix_usd_cents' => 800,
-                'prix_cdf' => 22000,
+                'niveau' => 'EXTENSION',
+                'nom' => 'Accès Église — Starter',
+                'argumentaire' => 'Le socle pour tenir une assemblée : membres, cultes et présences, '
+                    .'trésorerie locale, rapports, équipes, et le pointage côté département.',
+                'prix_usd_cents' => 500,
+                'prix_cdf' => 11500,
                 'paliers_taille' => null,
                 'plafond_acces' => null,
                 'periode_mois' => 1,
                 'quotas' => ['membres' => 300, 'comptes' => 5],
-                'fonctionnalites' => self::ENTITE_STARTER,
+                'fonctionnalites' => self::EGLISE_STARTER,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 20,
             ],
             [
-                'code' => 'ACCES_STANDARD',
+                'code' => 'ACCES_EGLISE_STANDARD',
                 'nature' => Plan::ACCES,
                 'palier' => Plan::STANDARD,
-                'niveau' => 'TOUS',
-                'nom' => 'Accès Standard',
-                'argumentaire' => 'Ajoute le suivi pastoral — visites, sujets de prière —, les activités '
-                    .'et les rapports calculés sur ce qui a été réellement pointé.',
-                'prix_usd_cents' => 1500,
-                'prix_cdf' => 42000,
+                'niveau' => 'EXTENSION',
+                'nom' => 'Accès Église — Standard',
+                'argumentaire' => 'Ajoute les programmes et le calendrier des activités, le suivi pastoral, '
+                    .'le discipulariat, les médias, la discipline, et les programmes internes du département.',
+                'prix_usd_cents' => 1000,
+                'prix_cdf' => 23000,
                 'paliers_taille' => null,
                 'plafond_acces' => null,
                 'periode_mois' => 1,
                 'quotas' => ['membres' => 1500, 'comptes' => 20],
-                'fonctionnalites' => self::ENTITE_STANDARD,
+                'fonctionnalites' => self::EGLISE_STANDARD,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 21,
             ],
             [
-                'code' => 'ACCES_PREMIUM',
+                'code' => 'ACCES_EGLISE_PREMIUM',
                 'nature' => Plan::ACCES,
                 'palier' => Plan::PREMIUM,
-                'niveau' => 'TOUS',
-                'nom' => 'Accès Premium',
-                'argumentaire' => 'Tous les modules, sans limite de membres ni de comptes : discipulariat, '
-                    .'discipline, trésorerie et médias compris.',
-                'prix_usd_cents' => 2500,
-                'prix_cdf' => 70000,
+                'niveau' => 'EXTENSION',
+                'nom' => 'Accès Église — Premium',
+                'argumentaire' => 'Tout l\'espace de l\'église et du département, transferts de membres compris, '
+                    .'sans limite de membres ni de comptes.',
+                'prix_usd_cents' => 1500,
+                'prix_cdf' => 34500,
                 'paliers_taille' => null,
                 'plafond_acces' => null,
                 'periode_mois' => 1,
                 'quotas' => ['membres' => null, 'comptes' => null],
-                'fonctionnalites' => null,
+                'fonctionnalites' => self::EGLISE_PREMIUM,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 22,
@@ -264,70 +266,157 @@ class PlanSeeder extends Seeder
         ];
     }
 
+    /** ACCÈS ANTENNE — mensuel. Ouvre l'espace de coordination régionale. */
+    private function accesAntenne(): array
+    {
+        return [
+            [
+                'code' => 'ACCES_ANTENNE_STARTER',
+                'nature' => Plan::ACCES,
+                'palier' => Plan::STARTER,
+                'niveau' => 'ANTENNE',
+                'nom' => 'Accès Antenne — Starter',
+                'argumentaire' => 'Coordonner sa zone : églises rattachées, affectation des bergers, '
+                    .'annuaire régional, services, rapports et communications.',
+                'prix_usd_cents' => 1000,
+                'prix_cdf' => 23000,
+                'paliers_taille' => null,
+                'plafond_acces' => null,
+                'periode_mois' => 1,
+                'quotas' => ['comptes' => 10],
+                'fonctionnalites' => self::ANTENNE_STARTER,
+                'modes_paiement' => null,
+                'is_public' => true,
+                'ordre' => 25,
+            ],
+            [
+                'code' => 'ACCES_ANTENNE_STANDARD',
+                'nature' => Plan::ACCES,
+                'palier' => Plan::STANDARD,
+                'niveau' => 'ANTENNE',
+                'nom' => 'Accès Antenne — Standard',
+                'argumentaire' => 'Ajoute le suivi pastoral, les visites d\'extensions avec rapport et PV, '
+                    .'les réunions mensuelles, les départements et les finances de l\'antenne.',
+                'prix_usd_cents' => 1500,
+                'prix_cdf' => 34500,
+                'paliers_taille' => null,
+                'plafond_acces' => null,
+                'periode_mois' => 1,
+                'quotas' => ['comptes' => 25],
+                'fonctionnalites' => self::ANTENNE_STANDARD,
+                'modes_paiement' => null,
+                'is_public' => true,
+                'ordre' => 26,
+            ],
+            [
+                'code' => 'ACCES_ANTENNE_PREMIUM',
+                'nature' => Plan::ACCES,
+                'palier' => Plan::PREMIUM,
+                'niveau' => 'ANTENNE',
+                'nom' => 'Accès Antenne — Premium',
+                'argumentaire' => 'Tout l\'espace antenne : transferts de membres et dossiers disciplinaires '
+                    .'des cadres compris, sans limite de comptes.',
+                'prix_usd_cents' => 2000,
+                'prix_cdf' => 46000,
+                'paliers_taille' => null,
+                'plafond_acces' => null,
+                'periode_mois' => 1,
+                'quotas' => ['comptes' => null],
+                'fonctionnalites' => self::ANTENNE_PREMIUM,
+                'modes_paiement' => null,
+                'is_public' => true,
+                'ordre' => 27,
+            ],
+        ];
+    }
+
     /**
-     * L'ÉGLISE SEULE. Licence et accès en un seul prix, inférieur à la somme des deux — c'est
-     * délibéré, et c'est là que se joue le volume : une assemblée sans réseau au-dessus d'elle est
-     * le client le plus fréquent, et celui qui compare le montant affiché avant tout le reste.
+     * L'ÉGLISE SEULE — deux lignes.
+     *
+     *   1. LICENCE COMBINÉE (annuel, prix fixe) : joue le rôle de licence pour la cascade et
+     *      finance l'hébergement du client. Quotas verrouillés à 0 antenne / 1 extension : une
+     *      église seule ne peut pas se transformer en réseau sans changer d'offre.
+     *   2. ACCÈS ÉGLISE SEULE (mensuel, plancher 20 $) : l'espace de l'église et du département,
+     *      plus cher qu'un accès en réseau parce qu'elle a tout l'espace vision pour elle.
      */
     private function egliseSeule(): array
     {
         return [
             [
-                'code' => 'SEULE_STARTER',
+                'code' => 'COMBINEE_STANDARD',
                 'nature' => Plan::COMBINEE,
-                'palier' => Plan::STARTER,
-                'niveau' => 'EXTENSION',
-                'nom' => 'Église seule — Starter',
-                'argumentaire' => 'Tout compris pour une assemblée sans réseau au-dessus d\'elle : '
-                    .'membres, départements, cultes et plannings.',
-                'prix_usd_cents' => 1500,
-                'prix_cdf' => 42000,
+                'palier' => Plan::STANDARD,
+                'niveau' => 'VISION',
+                'nom' => 'Église seule — Licence réduite (Standard)',
+                'argumentaire' => "Licence à l'année pour une assemblée sans réseau : ouvre l'espace de la "
+                    ."vision (config, site public, médias, comptes) et finance l'hébergement. À compléter "
+                    .'par un accès église seule mensuel.',
+                'prix_usd_cents' => 13000,
+                'prix_cdf' => 299000,
                 'paliers_taille' => null,
-                'plafond_acces' => null,
-                'periode_mois' => 1,
-                'quotas' => ['membres' => 300, 'comptes' => 5],
-                'fonctionnalites' => array_merge(['superadmin.users'], self::ENTITE_STARTER),
+                'plafond_acces' => Plan::STANDARD,
+                'periode_mois' => 12,
+                'quotas' => ['antennes' => 0, 'extensions' => 1],
+                'fonctionnalites' => self::VISION_STANDARD,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 30,
             ],
             [
-                'code' => 'SEULE_STANDARD',
+                'code' => 'COMBINEE_PREMIUM',
                 'nature' => Plan::COMBINEE,
-                'palier' => Plan::STANDARD,
-                'niveau' => 'EXTENSION',
-                'nom' => 'Église seule — Standard',
-                'argumentaire' => 'Le suivi pastoral, les activités et les rapports en plus. '
-                    .'Le choix courant pour une église déjà organisée en départements.',
-                'prix_usd_cents' => 2500,
-                'prix_cdf' => 70000,
+                'palier' => Plan::PREMIUM,
+                'niveau' => 'VISION',
+                'nom' => 'Église seule — Licence réduite (Premium)',
+                'argumentaire' => "Même chose, tous les modules de l'espace vision compris. Autorise un "
+                    .'accès église seule Premium.',
+                'prix_usd_cents' => 13000,
+                'prix_cdf' => 299000,
                 'paliers_taille' => null,
-                'plafond_acces' => null,
-                'periode_mois' => 1,
-                'quotas' => ['membres' => 1500, 'comptes' => 20],
-                'fonctionnalites' => array_merge(['superadmin.users', 'superadmin.reports', 'superadmin.media'], self::ENTITE_STANDARD),
+                'plafond_acces' => Plan::PREMIUM,
+                'periode_mois' => 12,
+                'quotas' => ['antennes' => 0, 'extensions' => 1],
+                'fonctionnalites' => self::VISION_PREMIUM,
                 'modes_paiement' => null,
                 'is_public' => true,
                 'ordre' => 31,
             ],
             [
-                'code' => 'SEULE_PREMIUM',
-                'nature' => Plan::COMBINEE,
+                'code' => 'ACCES_SEULE_STANDARD',
+                'nature' => Plan::ACCES,
+                'palier' => Plan::STANDARD,
+                'niveau' => 'EXTENSION',
+                'nom' => 'Accès Église seule — Standard',
+                'argumentaire' => "L'espace de l'église et du département pour une assemblée autonome : "
+                    .'membres, cultes, trésorerie, programmes, pastoral, discipulariat, médias.',
+                'prix_usd_cents' => 2000,
+                'prix_cdf' => 46000,
+                'paliers_taille' => null,
+                'plafond_acces' => null,
+                'periode_mois' => 1,
+                'quotas' => ['membres' => 1500, 'comptes' => 20],
+                'fonctionnalites' => self::EGLISE_STANDARD,
+                'modes_paiement' => null,
+                'is_public' => true,
+                'ordre' => 32,
+            ],
+            [
+                'code' => 'ACCES_SEULE_PREMIUM',
+                'nature' => Plan::ACCES,
                 'palier' => Plan::PREMIUM,
                 'niveau' => 'EXTENSION',
-                'nom' => 'Église seule — Premium',
-                'argumentaire' => 'Tous les modules, sans limite : discipulariat, discipline, '
-                    .'trésorerie et médias compris.',
-                'prix_usd_cents' => 4000,
-                'prix_cdf' => 112000,
+                'nom' => 'Accès Église seule — Premium',
+                'argumentaire' => 'Tout l\'espace de l\'église et du département, transferts compris, sans limite.',
+                'prix_usd_cents' => 3000,
+                'prix_cdf' => 69000,
                 'paliers_taille' => null,
                 'plafond_acces' => null,
                 'periode_mois' => 1,
                 'quotas' => ['membres' => null, 'comptes' => null],
-                'fonctionnalites' => null,
+                'fonctionnalites' => self::EGLISE_PREMIUM,
                 'modes_paiement' => null,
                 'is_public' => true,
-                'ordre' => 32,
+                'ordre' => 33,
             ],
         ];
     }
