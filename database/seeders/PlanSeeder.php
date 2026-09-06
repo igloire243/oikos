@@ -61,14 +61,18 @@ class PlanSeeder extends Seeder
     // deux middlewares distincts (`permission:` et `secteur.module:`). Les mélanger produit une
     // offre qui vend un module qu'aucun code n'ouvrira.
 
-    /** ESPACE VISION — le socle du siège : les comptes, le réseau, le calendrier, les bilans. */
+    /** ESPACE VISION — le socle du siège : les comptes, le réseau, le calendrier, les bilans.
+     *  transferts + profils spirituels suivent le réseau (superadmin.entites) : ce sont ses
+     *  sous-modules, découpés pour pouvoir les déléguer un par un. */
     private const VISION_STARTER = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
+        'superadmin.users', 'superadmin.entites', 'superadmin.transferts', 'superadmin.profils',
+        'superadmin.programs', 'superadmin.reports',
     ];
 
     /** ESPACE VISION — le socle, plus la diffusion et les médias. */
     private const VISION_STANDARD = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
+        'superadmin.users', 'superadmin.entites', 'superadmin.transferts', 'superadmin.profils',
+        'superadmin.programs', 'superadmin.reports',
         'superadmin.communications', 'superadmin.media',
     ];
 

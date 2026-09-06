@@ -49,6 +49,18 @@ return [
                 'vendable' => true,
                 'texte' => "Les antennes, les églises, les départements et les commissions — l'organigramme réel de la communauté.",
             ],
+            'superadmin.transferts' => [
+                'nom' => 'Transferts de membres (parc entier)',
+                'icone' => 'arrow-left-right',
+                'vendable' => true,
+                'texte' => "La vue de tous les transferts du réseau et la confirmation de repli quand une antenne ne tranche pas.",
+            ],
+            'superadmin.profils' => [
+                'nom' => 'Profils spirituels',
+                'icone' => 'list-tree',
+                'vendable' => true,
+                'texte' => "La nomenclature du parcours d'un membre (visiteur, nouveau converti, membre régulier…), gérée une seule fois par la vision.",
+            ],
             'superadmin.programs' => [
                 'nom' => 'Programmes et cultes de la vision',
                 'icone' => 'calendar-days',
@@ -80,10 +92,16 @@ return [
                 'texte' => 'Photos, albums, flyers, vidéos, audios et directs, publiés depuis le même espace.',
             ],
             'superadmin.settings' => [
-                'nom' => 'Paramètres et sécurité',
+                'nom' => 'Configuration générale et site public',
+                'icone' => 'settings',
+                'vendable' => false,
+                'texte' => 'Réglages généraux et vitrine publique de la communauté. Toujours ouvert.',
+            ],
+            'superadmin.securite' => [
+                'nom' => 'Journaux, sauvegardes et maintenance',
                 'icone' => 'shield-check',
                 'vendable' => false,
-                'texte' => 'Configuration générale, site public, journaux et maintenance. Toujours ouvert.',
+                'texte' => "Journal d'activité, sauvegardes de la base et mode maintenance. Toujours ouvert.",
             ],
         ],
     ],
