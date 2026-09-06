@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Les icônes Lucide arrivent en <i> et sont remplacées par un <svg> au chargement. Sans cette
+   règle, la page saute d'un cran au moment du remplacement : le <i> vide n'occupe aucune place,
+   le <svg> en occupe une. On réserve donc l'espace dès le départ. */
+[data-lucide] {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    flex-shrink: 0;
+}
+
+/* ------------------------------------------------------------------------------------------
+   LES BARRES DE DÉFILEMENT
+   ------------------------------------------------------------------------------------------
+   Deux traitements, pour deux rôles opposés.
+
+   1. LA BARRE VERTICALE DE LA PAGE reste VISIBLE, simplement plus discrète : fine, grise, sans
+      les flèches et le fond gris clair du rendu par défaut de Windows. C'est le seul repère qui
+      dise « la page continue plus bas » et « vous en êtes ici ». La masquer ferait gagner trois
+      pixels et perdre la seule mesure de la longueur d'un document.
+
+   2. LES RANGS DÉFILANTS À L'HORIZONTALE (les bandeaux) n'ont PAS de barre du tout. Une barre
+      horizontale sous un rang de cartes coupe la mise en page en deux, et le navigateur la fait
+      apparaître et disparaître au survol, ce qui fait sauter le contenu de quelques pixels.
+
+      CE QUE CE MASQUAGE COÛTE, ET COMMENT C'EST PAYÉ. La barre est le signal « ceci défile ».
+      En la retirant, on doit le remplacer, sinon un visiteur ne saura jamais qu'il y a des
+      offres à droite. Deux choses le font à sa place : les VOILES latéraux, qui ne s'allument
+      que du côté où il reste quelque chose, et la mention « Faites défiler » au-dessus du rang.
+      Si l'un des deux disparaît un jour, il faudra rendre la barre — pas retirer l'autre.
+
+   Deux syntaxes sont nécessaires : `scrollbar-*` pour Firefox, `::-webkit-scrollbar` pour Chrome,
+   Edge et Safari. Aucune ne remplace l'autre. */
+
+@supports (scrollbar-width: thin) {
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+}
+
+html::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+
+    /* La bordure transparente amincit le curseur sans réduire la zone qu'on peut attraper à la
+       souris : on garde une cible de 10 pixels pour un trait qui en montre 6. */
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* Sur les surfaces sombres — la barre latérale de la console — un curseur gris clair fait une
+   entaille blanche. On le prend dans les verts du fond. */
+.barre-sombre {
+    scrollbar-color: rgba(52, 211, 153, 0.35) transparent;
+}
+
+.barre-sombre::-webkit-scrollbar-thumb {
+    background-color: rgba(52, 211, 153, 0.35);
+}
+
+.barre-sombre::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(52, 211, 153, 0.55);
+}
+
+/* Aucune barre. Appliqué d'office aux bandeaux, et disponible ailleurs sous le nom `sans-barre`.
+   `-ms-overflow-style` sert aux vieux Edge, encore installés sur des postes qu'on ne met pas
+   à jour. */
+[data-bandeau-piste],
+.sans-barre {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+[data-bandeau-piste]::-webkit-scrollbar,
+.sans-barre::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
