@@ -132,9 +132,19 @@ class AbonnementController extends Controller
         $installation = $abonnement->installation;
         $prix = Cascade::prix($installation, $plan);
 
-        $depart = $abonnement->periode_fin && $abonnement->periode_fin->isFuture()
-            ? $abonnement->periode_fin->copy()
-            : now()->startOfDay();
+        // ANCRAGE DU JOUR DE FACTURATION.
+        //  - Renouvelé AVANT l'échéance : la nouvelle période enchaîne sur l'ancienne fin — payer en
+        //    avance ne fait pas perdre de jours.
+        //  - Renouvelé PENDANT LE DÉLAI DE GRÂCE : on repart quand même de l'ancienne `periode_fin`,
+        //    pour que le jour du mois ne dérive pas à chaque petit retard (20 mars → 20 avril → 20 mai,
+        //    même si le règlement tombe le 30 avril). Le client a eu la grâce, pas un mois offert.
+        //  - Renouvelé APRÈS la grâce : l'ancienne période est trop loin derrière, on repart
+        //    d'aujourd'hui.
+        $dansLaContinuite = $abonnement->periode_fin
+            && ($abonnement->periode_fin->isFuture()
+                || ($abonnement->grace_fin && $abonnement->grace_fin->isFuture()));
+
+        $depart = $dansLaContinuite ? $abonnement->periode_fin->copy() : now()->startOfDay();
 
         $fin = $depart->copy()->addMonths((int) $plan->periode_mois);
 
