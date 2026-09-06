@@ -146,6 +146,12 @@ class EtatLicence
                     'devise' => $facture->devise,
                     'du_le' => $facture->du_le?->toDateString(),
                     'objet' => $facture->abonnement?->plan?->nom,
+                    // À quelle ENTITÉ cette facture se rapporte — « TYPE:ref » (VISION:1, ANTENNE:12,
+                    // EXTENSION:44), ou null hors abonnement. Le produit s'en sert pour n'afficher,
+                    // sur la page d'un espace, que les factures de cette entité-là.
+                    'beneficiaire' => $facture->abonnement
+                        ? $facture->abonnement->beneficiaire_type.':'.$facture->abonnement->beneficiaire_ref
+                        : null,
                 ];
             }
         }
