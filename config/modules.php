@@ -91,6 +91,12 @@ return [
                 'vendable' => true,
                 'texte' => 'Photos, albums, flyers, vidéos, audios et directs, publiés depuis le même espace.',
             ],
+            'superadmin.messagerie' => [
+                'nom' => 'Messagerie interne',
+                'icone' => 'messages-square',
+                'vendable' => false,
+                'texte' => "Transversale : le même écran de messagerie sert les six espaces et n'est facturé qu'une fois (secteur.messagerie). La clé existe pour pouvoir la cocher ou la décocher sur un compte délégué.",
+            ],
             'superadmin.settings' => [
                 'nom' => 'Configuration générale et site public',
                 'icone' => 'settings',
@@ -191,6 +197,12 @@ return [
                 'icone' => 'megaphone',
                 'vendable' => true,
                 'texte' => "Annonces et diffusion vers les responsables d'églises de la région.",
+            ],
+            'antenne.messagerie' => [
+                'nom' => 'Messagerie interne',
+                'icone' => 'messages-square',
+                'vendable' => false,
+                'texte' => "Transversale (voir superadmin.messagerie) : jamais facturée à part, présente pour pouvoir être cochée ou non sur un compte délégué d'antenne.",
             ],
             'antenne.parametres' => [
                 'nom' => "Paramètres de l'antenne",
@@ -345,6 +357,12 @@ return [
                 'icone' => 'folder-open',
                 'vendable' => true,
                 'texte' => 'Partitions, documents et supports mis à disposition de son équipe.',
+            ],
+            'department.messagerie' => [
+                'nom' => 'Messagerie interne',
+                'icone' => 'messages-square',
+                'vendable' => false,
+                'texte' => "Transversale (voir superadmin.messagerie) : jamais facturée à part, présente pour pouvoir être cochée ou non sur un compte délégué de département.",
             ],
         ],
     ],
