@@ -85,13 +85,13 @@ class PlanSeeder extends Seeder
     private const ANTENNE_STANDARD = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports',
         'antenne.services', 'antenne.communications', 'antenne.pastoral', 'antenne.visites',
-        'antenne.reunions', 'antenne.departements', 'antenne.finances',
+        'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias',
     ];
     private const ANTENNE_PREMIUM = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.transferts',
         'antenne.pastoral', 'antenne.visites', 'antenne.services', 'antenne.departements',
         'antenne.finances', 'antenne.rapports', 'antenne.reunions', 'antenne.dossiers',
-        'antenne.communications',
+        'antenne.communications', 'antenne.medias',
     ];
 
     public function run(): void
@@ -232,7 +232,8 @@ class PlanSeeder extends Seeder
                 'niveau' => 'EXTENSION',
                 'nom' => 'Accès Église — Standard',
                 'argumentaire' => 'Ajoute les programmes et le calendrier des activités, le suivi pastoral, '
-                    .'le discipulariat, les médias, la discipline, et les programmes internes du département.',
+                    .'le discipulariat, les médias (photos, albums, directs), la discipline, le pointage '
+                    .'par badge QR aux cultes, et les programmes internes du département.',
                 'prix_usd_cents' => 1000,
                 'prix_cdf' => 23000,
                 'paliers_taille' => null,
@@ -296,7 +297,8 @@ class PlanSeeder extends Seeder
                 'niveau' => 'ANTENNE',
                 'nom' => 'Accès Antenne — Standard',
                 'argumentaire' => 'Ajoute le suivi pastoral, les visites d\'extensions avec rapport et PV, '
-                    .'les réunions mensuelles, les départements et les finances de l\'antenne.',
+                    .'les réunions mensuelles, les départements centraux de l\'antenne, les médias de sa '
+                    .'page publique et les finances de l\'antenne.',
                 'prix_usd_cents' => 1500,
                 'prix_cdf' => 34500,
                 'paliers_taille' => null,
