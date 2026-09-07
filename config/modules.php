@@ -198,6 +198,12 @@ return [
                 'vendable' => true,
                 'texte' => "Annonces et diffusion vers les responsables d'églises de la région.",
             ],
+            'antenne.medias' => [
+                'nom' => "Médias de l'antenne",
+                'icone' => 'image',
+                'vendable' => true,
+                'texte' => "Photos, vidéos et publications de la page publique de l'antenne.",
+            ],
             'antenne.messagerie' => [
                 'nom' => 'Messagerie interne',
                 'icone' => 'messages-square',
