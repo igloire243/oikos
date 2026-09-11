@@ -17,14 +17,19 @@
 |
 | CE QUI EST INVENDABLE, ET POURQUOI
 | ------------------------------------
-| Les paramètres d'une entité, sa gestion des comptes, le tableau de bord d'une commission :
-| `vendable => false`. Les fermer empêcherait le client de réparer sa propre installation —
-| y compris pour venir payer. Ils apparaissent dans le catalogue pour que l'inventaire soit
-| complet et vérifiable, mais aucune offre ne peut les retirer.
+| Les paramètres d'une entité, sa gestion des comptes : `vendable => false`. Les fermer
+| empêcherait le client de réparer sa propre installation — y compris pour venir payer. Ils
+| apparaissent dans le catalogue pour que l'inventaire soit complet et vérifiable, mais aucune
+| offre ne peut les retirer.
 |
-| LES SIX ESPACES ONT ÉTÉ RELEVÉS DANS LES ROUTES DU PRODUIT, groupe par groupe. « extension »
+| LES QUATRE ESPACES ONT ÉTÉ RELEVÉS DANS LES ROUTES DU PRODUIT, groupe par groupe. « extension »
 | n'est pas un espace séparé — c'est un autre nom de l'espace secteur, les routes sont les mêmes.
-| Et « commission » n'a qu'un tableau de bord : il n'y a rien à y découper aujourd'hui.
+| « commission » a été DISSOUS (voir docs/etat-de-besoin-espace-membre.md §I côté produit,
+| migration migrer_commission_members_vers_comptes_delegues) : ce n'était que des délégués du
+| superadmin pour les événements de la Vision, exactement ce que `comptes_delegues` fait déjà —
+| un espace séparé n'ajoutait rien. Ses anciens délégués actifs sont devenus des `comptes_delegues`
+| espace `superadmin` (permissions `programs` + la nouvelle clé `superadmin.evenements`
+| ci-dessous).
 */
 
 return [
@@ -44,10 +49,10 @@ return [
                 'texte' => 'Créer, modifier et suspendre les comptes de toute la structure, avec la matrice des rôles et des permissions.',
             ],
             'superadmin.entites' => [
-                'nom' => 'Implantations, réseau et commissions',
+                'nom' => 'Implantations et réseau',
                 'icone' => 'network',
                 'vendable' => true,
-                'texte' => "Les antennes, les églises, les départements et les commissions — l'organigramme réel de la communauté.",
+                'texte' => "Les antennes, les églises et les départements — l'organigramme réel de la communauté.",
             ],
             'superadmin.transferts' => [
                 'nom' => 'Transferts de membres (parc entier)',
@@ -56,16 +61,22 @@ return [
                 'texte' => "La vue de tous les transferts du réseau et la confirmation de repli quand une antenne ne tranche pas.",
             ],
             'superadmin.profils' => [
-                'nom' => 'Profils spirituels',
+                'nom' => 'Profils spirituels et ministères',
                 'icone' => 'list-tree',
                 'vendable' => true,
-                'texte' => "La nomenclature du parcours d'un membre (visiteur, nouveau converti, membre régulier…), gérée une seule fois par la vision.",
+                'texte' => "Les deux nomenclatures que la vision tient une fois pour toutes : le parcours d'un membre (visiteur, nouveau converti, membre régulier…) et les ministères transverses (pasteur, prophète, diacre…).",
             ],
             'superadmin.programs' => [
                 'nom' => 'Programmes et cultes de la vision',
                 'icone' => 'calendar-days',
                 'vendable' => true,
                 'texte' => 'Le calendrier de la vision et les feuilles de présence, consolidés sur tout le réseau.',
+            ],
+            'superadmin.evenements' => [
+                'nom' => 'Organisation des événements de la Vision',
+                'icone' => 'calendar-star',
+                'vendable' => false,
+                'texte' => "Ce que faisait l'espace Commission avant sa dissolution — une case cochable sur un compte délégué déjà créé, pas un module qu'on achète en plus.",
             ],
             'superadmin.finances' => [
                 'nom' => 'Finances de la vision',
@@ -375,19 +386,13 @@ return [
 
     /*
     |----------------------------------------------------------------------
-    | L'ESPACE D'UNE COMMISSION — un seul écran aujourd'hui
+    | L'ESPACE COMMISSION A ÉTÉ DISSOUS
     |----------------------------------------------------------------------
+    | Ce qu'il faisait — organiser les événements et activités de la Vision — est repris par
+    | `superadmin.evenements`, une case cochable sur un compte délégué déjà existant plutôt qu'un
+    | espace séparé avec son propre thème et sa propre garde. Voir §I de
+    | generation-joel/docs/etat-de-besoin-espace-membre.md et la migration
+    | migrer_commission_members_vers_comptes_delegues côté produit.
     */
-    'commission' => [
-        'libelle' => "Espace d'une commission",
-        'modules' => [
-            'commission.tableau' => [
-                'nom' => 'Tableau de bord de la commission',
-                'icone' => 'layout-dashboard',
-                'vendable' => false,
-                'texte' => "Un seul écran : il n'y a rien à découper tant que cet espace n'a pas de sections distinctes.",
-            ],
-        ],
-    ],
 
 ];

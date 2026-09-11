@@ -7,7 +7,7 @@ use App\Models\Plan;
 /**
  * LE CATALOGUE DES MODULES, LU AU BON ENDROIT.
  *
- * Six espaces vivent dans config/modules.php, et ce fichier doit rester le miroir exact de
+ * Quatre espaces vivent dans config/modules.php, et ce fichier doit rester le miroir exact de
  * app/Support/Modules.php côté Génération Joël : ce sont ces clés qui voyagent dans la licence.
  * Une clé qui diffère d'un caractère entre les deux côtés produit un module vendu et jamais ouvert,
  * et le défaut ne se voit qu'à l'usage, chez le client.
@@ -26,16 +26,20 @@ class Modules
      *
      *   LICENCE  → l'espace de la vision seul. Elle allume le système et ouvre le siège ; ce que
      *              font les entités en dessous relève de leurs propres accès.
-     *   ACCES    → les espaces d'exploitation : antenne, église, département, commission. Une
-     *              antenne et une cellule achètent le même palier, elles n'ouvrent simplement pas
-     *              les mêmes pages.
+     *   ACCES    → les espaces d'exploitation : antenne, église, département. Une antenne et une
+     *              cellule achètent le même palier, elles n'ouvrent simplement pas les mêmes pages.
      *   COMBINEE → tout. Une église seule EST sa propre vision : son installation a un compte
      *              superadmin, et il serait faux de lui refuser l'espace qu'elle possède forcément.
+     *
+     * L'espace Commission a été dissous (voir §I de
+     * generation-joel/docs/etat-de-besoin-espace-membre.md) : ce qu'il faisait vit désormais dans
+     * `superadmin.evenements`, une case cochable sur un compte délégué de la Vision — pas un espace
+     * séparé qu'une offre ACCES ou COMBINEE aurait à ouvrir.
      */
     public const ESPACES_PAR_NATURE = [
         Plan::LICENCE => ['superadmin'],
-        Plan::ACCES => ['antenne', 'secteur', 'department', 'commission'],
-        Plan::COMBINEE => ['superadmin', 'antenne', 'secteur', 'department', 'commission'],
+        Plan::ACCES => ['antenne', 'secteur', 'department'],
+        Plan::COMBINEE => ['superadmin', 'antenne', 'secteur', 'department'],
     ];
 
     /** @return array<string, array{libelle:string, modules:array}> */
@@ -70,8 +74,8 @@ class Modules
     /**
      * Ceux qu'un abonnement peut réellement fermer.
      *
-     * Les paramètres, la gestion des comptes et le tableau de bord d'une commission en sont exclus :
-     * les fermer empêcherait un client de réparer son installation — y compris pour venir payer.
+     * Les paramètres et la gestion des comptes d'une entité en sont exclus : les fermer empêcherait
+     * un client de réparer son installation — y compris pour venir payer.
      */
     public static function vendables(): array
     {
