@@ -38,9 +38,19 @@ class PlanController extends Controller
         'EXTENSION' => 'Église',
     ];
 
+    /**
+     * LES QUOTAS QU'ON PEUT ENCORE POSER — c'est-à-dire ceux que le produit applique vraiment.
+     *
+     * `membres` et `comptes` en ont été retirés le 2026-09-12 : ils étaient proposés ici, écrits
+     * dans la licence signée, et lus par personne (côté produit, `Licence::quotaAtteint()` n'est
+     * appelée que pour `antennes` et `extensions`). Les laisser dans ce formulaire permettait de
+     * promettre à un client une limite qui ne serait jamais appliquée — et, le jour où on
+     * l'appliquerait, de la lui imposer rétroactivement.
+     *
+     * Les rétablir suppose de les APPLIQUER d'abord dans le produit, et de régler au passage leur
+     * portée : `EtatLicence::quotas()` agrège pour toute l'installation, pas par entité.
+     */
     private const QUOTAS = [
-        'membres' => 'Membres',
-        'comptes' => 'Comptes utilisateurs',
         'antennes' => 'Antennes',
         'extensions' => 'Églises',
     ];
@@ -128,7 +138,12 @@ class PlanController extends Controller
         return [
             'plan' => $plan,
             'natures' => Plan::NATURES,
-            'paliers' => Plan::PALIERS,
+            // Le palier DEJA PORTE par l'offre reste proposable, meme s'il n'est plus vendable :
+            // sans cela, ouvrir puis enregistrer une vieille offre Starter la ferait basculer en
+            // Standard sans un mot — une modification de tarif par simple ouverture d'un ecran.
+            'paliers' => $plan->palier && ! isset(Plan::PALIERS_VENDABLES[$plan->palier])
+                ? Plan::PALIERS_VENDABLES + [$plan->palier => Plan::PALIERS[$plan->palier] ?? $plan->palier]
+                : Plan::PALIERS_VENDABLES,
             'niveaux' => self::NIVEAUX,
             'quotasPossibles' => self::QUOTAS,
             'espaces' => Modules::espaces(),
@@ -160,6 +175,12 @@ class PlanController extends Controller
             'prix_usd' => ['required', 'numeric', 'min:0', 'max:100000'],
             'prix_cdf' => ['required', 'integer', 'min:0', 'max:2000000000'],
             'periode_mois' => ['required', 'integer', 'min:1', 'max:36'],
+
+            // Le montant PAR ENTITÉ. Laissé vide, l'offre se facture à prix fixe (ou aux anciennes
+            // tranches si elle en porte) : c'est l'absence de valeur qui désigne le mode, et non un
+            // champ « mode » qu'il faudrait garder cohérent avec les montants.
+            'par_entite_usd' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+            'par_entite_cdf' => ['nullable', 'integer', 'min:0', 'max:100000000'],
 
             'plafond_acces' => ['nullable', Rule::in(array_keys(Plan::PALIERS))],
             'ordre' => ['required', 'integer', 'min:0', 'max:999'],
@@ -207,6 +228,11 @@ class PlanController extends Controller
             'prix_cdf' => (int) $donnees['prix_cdf'],
             'periode_mois' => (int) $donnees['periode_mois'],
 
+            // Réservé aux LICENCES : un accès se paie par entité par définition, lui ajouter un
+            // montant « par entité » le facturerait deux fois.
+            'prix_par_entite_usd_cents' => $this->parEntite($donnees, 'par_entite_usd', true),
+            'prix_par_entite_cdf' => $this->parEntite($donnees, 'par_entite_cdf', false),
+
             'paliers_taille' => $this->echelons($request, $donnees),
             'plafond_acces' => $donnees['nature'] === Plan::LICENCE ? ($donnees['plafond_acces'] ?? null) : null,
 
@@ -234,6 +260,30 @@ class PlanController extends Controller
         $autorisees = Modules::clesPour($nature);
 
         return array_values(array_intersect($choisis, $autorisees));
+    }
+
+    /**
+     * Le montant par entité, ou null — ce qui vaut « cette offre ne suit pas la taille ».
+     *
+     * Un zéro saisi est traité comme une absence : « 0 $ par entité » et « pas de tarif par
+     * entité » décrivent la même facture, et garder le zéro afficherait « + 0,00 $ par entité »
+     * sur la page publique.
+     */
+    private function parEntite(array $donnees, string $champ, bool $enCentimes): ?int
+    {
+        if ($donnees['nature'] !== Plan::LICENCE) {
+            return null;
+        }
+
+        $brut = $donnees[$champ] ?? null;
+
+        if ($brut === null || $brut === '') {
+            return null;
+        }
+
+        $valeur = $enCentimes ? (int) round(((float) $brut) * 100) : (int) $brut;
+
+        return $valeur > 0 ? $valeur : null;
     }
 
     /**

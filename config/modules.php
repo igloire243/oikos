@@ -286,6 +286,12 @@ return [
                 'vendable' => true,
                 'texte' => "Les demandes reçues, leur suivi, et les réponses constatées — pour que « on priera pour vous » se vérifie.",
             ],
+            'secteur.espace_membre' => [
+                'nom' => 'Espace personnel des membres',
+                'icone' => 'user-round-check',
+                'vendable' => true,
+                'texte' => "Chaque fidèle a son compte : il consulte son parcours, ses présences, les programmes et les annonces de son église. Sans cette option, les membres sont gérés mais ne se connectent pas.",
+            ],
             'secteur.messagerie' => [
                 'nom' => 'Messagerie interne',
                 'icone' => 'messages-square',

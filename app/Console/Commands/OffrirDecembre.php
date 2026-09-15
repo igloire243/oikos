@@ -2,22 +2,19 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Abonnement;
-use App\Models\EntreeJournal;
-use App\Models\Plan;
+use App\Support\PromoDecembre;
 use Illuminate\Console\Command;
 
 /**
  * PROMOTION « MOIS DES FÊTES » — décembre offert sur tous les ACCÈS.
  *
- * Chaque année, tout abonnement d'ACCÈS (église, cellule, antenne — la Licence annuelle n'est
- * pas concernée) qui laisse encore écrire gagne UN MOIS de période en plus, gratuitement : sa
- * `periode_fin` et sa `grace_fin` sont repoussées d'un mois, sans facture. Le client n'est donc
- * pas suspendu en décembre même s'il ne « renouvelle » pas.
+ * La règle elle-même vit dans App\Support\PromoDecembre : cette commande n'est qu'une des DEUX
+ * portes, l'autre étant le bouton de l'écran Réglages. La logique était ici à l'origine ; l'y
+ * laisser aurait obligé le contrôleur à la recopier, et deux copies d'une règle qui déplace des
+ * dates d'échéance finissent par créditer un client deux fois, ou pas du tout.
  *
- * IDEMPOTENTE : la colonne `abonnements.promo_decembre_annee` retient l'année déjà offerte. Rejouer
- * la commande le même décembre ne touche à rien. À planifier au 1ᵉʳ décembre (voir routes/console.php)
- * ou à lancer à la main.
+ * Planifiée au 1ᵉʳ décembre (voir routes/console.php) — ce qui suppose un `schedule:run` en cron sur
+ * le serveur. Le bouton existe précisément parce que cette condition n'est pas toujours remplie.
  *
  *     php artisan abonnement:offrir-decembre [--annee=2026]
  */
@@ -29,49 +26,23 @@ class OffrirDecembre extends Command
 
     public function handle(): int
     {
-        $annee = (int) ($this->option('annee') ?: now()->year);
+        $resultat = PromoDecembre::offrir($this->option('annee') ? (int) $this->option('annee') : null);
 
-        $abonnements = Abonnement::with('plan')
-            ->whereIn('statut', Abonnement::OUVRENT_ECRITURE)
-            ->where(function ($q) use ($annee) {
-                $q->whereNull('promo_decembre_annee')->orWhere('promo_decembre_annee', '<', $annee);
-            })
-            ->get()
-            ->filter(fn (Abonnement $a) => $a->plan?->nature === Plan::ACCES);
-
-        if ($abonnements->isEmpty()) {
-            $this->info("Aucun accès à créditer pour {$annee}.");
+        if ($resultat['offerts'] === 0) {
+            // On distingue « rien à créditer » de « déjà fait » : le second n'est pas un échec, et
+            // l'afficher comme tel ferait relancer la commande pour rien.
+            $this->info($resultat['deja'] > 0
+                ? "Décembre {$resultat['annee']} était déjà offert sur {$resultat['deja']} accès — rien à faire."
+                : "Aucun accès à créditer pour {$resultat['annee']}.");
 
             return self::SUCCESS;
         }
 
-        $offerts = 0;
+        $this->info("Décembre {$resultat['annee']} offert sur {$resultat['offerts']} accès — période repoussée d'un mois.");
 
-        foreach ($abonnements as $abonnement) {
-            $finAvant = $abonnement->periode_fin?->copy();
-
-            $abonnement->update([
-                'periode_fin' => $abonnement->periode_fin
-                    ? $abonnement->periode_fin->copy()->addMonthNoOverflow()
-                    : now()->addMonthNoOverflow(),
-                'grace_fin' => $abonnement->grace_fin
-                    ? $abonnement->grace_fin->copy()->addMonthNoOverflow()
-                    : null,
-                'promo_decembre_annee' => $annee,
-            ]);
-
-            EntreeJournal::noter('PROMO_DECEMBRE_OFFERTE', $abonnement->installation, [
-                'annee' => $annee,
-                'offre' => $abonnement->plan?->nom,
-                'beneficiaire' => $abonnement->beneficiaire_type.' #'.$abonnement->beneficiaire_ref,
-                'periode_fin_avant' => $finAvant?->toDateString(),
-                'periode_fin_apres' => $abonnement->periode_fin?->toDateString(),
-            ]);
-
-            $offerts++;
+        if ($resultat['deja'] > 0) {
+            $this->line("  ({$resultat['deja']} accès l'avaient déjà.)");
         }
-
-        $this->info("Décembre {$annee} offert sur {$offerts} accès — période repoussée d'un mois.");
 
         return self::SUCCESS;
     }

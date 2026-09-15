@@ -87,7 +87,12 @@
                                 <span class="text-[12px] text-slate-500">/ {{ $p->libellePeriode() }}</span><br>
                                 <span class="text-[12px] text-slate-500 tabular-nums">{{ number_format($p->prix_cdf, 0, ',', ' ') }} FC</span>
 
-                                @if ($p->aUneGrilleDeTailles())
+                                @if ($p->aUnTarifParEntite())
+                                    {{-- La formule tient sur une ligne : pas de volet à déplier. --}}
+                                    <span class="block mt-1.5 text-[12px] font-semibold text-emerald-700 tabular-nums">
+                                        + {{ $p->parEntiteUsd() }} par entité
+                                    </span>
+                                @elseif ($p->aUneGrilleDeTailles())
                                     {{-- La grille de tailles est repliée : dans la console, on la
                                          consulte pour vérifier un prix, on ne la lit pas à chaque
                                          passage. Dépliée, elle triplerait la hauteur du tableau. --}}

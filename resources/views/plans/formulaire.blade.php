@@ -168,11 +168,43 @@
                 <span class="ml-auto text-[11px] font-semibold text-slate-400">licences seulement</span>
             </div>
             <div class="px-5 py-5">
+                {{-- LE MODE RETENU : une formule, socle + montant par entité. Il vient en premier
+                     et occupe la place, parce que c'est celui qu'on remplit. --}}
                 <p class="text-[12.5px] text-slate-500 mb-4 leading-relaxed max-w-2xl">
-                    Trois échelons au plus. Laissez le plafond du dernier <strong class="font-semibold">vide</strong> :
-                    c'est lui qui attrape les réseaux qui dépassent tout — sans lui, un client de deux cents
-                    églises ne trouverait aucun prix. Un seul échelon rempli est ignoré : le prix simple suffit alors.
+                    Le prix de la licence, c'est le <strong class="font-semibold">prix ci-dessus</strong>
+                    (le socle) <strong class="font-semibold">plus un montant par entité</strong>. Une formule
+                    s'explique en une phrase et ne fait pas de marche : avec des tranches, franchir une borne
+                    coûtait plus cher que la tranche elle-même.
                 </p>
+
+                <div class="grid sm:grid-cols-2 gap-3 max-w-xl">
+                    <div>
+                        <label for="par_entite_usd" class="{{ $etiquette }}">Par entité, en dollars</label>
+                        <input id="par_entite_usd" type="number" step="0.01" min="0" name="par_entite_usd"
+                               value="{{ old('par_entite_usd', $plan->prix_par_entite_usd_cents !== null ? number_format($plan->prix_par_entite_usd_cents / 100, 2, '.', '') : '') }}"
+                               placeholder="vide = prix fixe"
+                               class="{{ $champ }} tabular-nums">
+                    </div>
+                    <div>
+                        <label for="par_entite_cdf" class="{{ $etiquette }}">Par entité, en francs</label>
+                        <input id="par_entite_cdf" type="number" step="1" min="0" name="par_entite_cdf"
+                               value="{{ old('par_entite_cdf', $plan->prix_par_entite_cdf) }}"
+                               class="{{ $champ }} tabular-nums">
+                    </div>
+                </div>
+
+                {{-- LES ANCIENNES TRANCHES, REPLIÉES. On ne les propose plus, mais une offre déjà
+                     vendue sous ce mode doit rester modifiable : effacer ses échelons en ouvrant
+                     l'écran changerait le prix d'un contrat en cours. --}}
+                <details class="mt-6" @if (! empty($echelons)) open @endif>
+                    <summary class="text-[12.5px] font-semibold text-slate-500 cursor-pointer">
+                        Ancien mode : prix par tranche de taille
+                    </summary>
+                    <p class="text-[12.5px] text-slate-500 mt-3 mb-4 leading-relaxed max-w-2xl">
+                        Conservé pour les offres déjà vendues ainsi. Ignoré dès qu'un montant par entité est
+                        renseigné ci-dessus. Trois échelons au plus, plafond du dernier laissé
+                        <strong class="font-semibold">vide</strong> pour attraper ce qui dépasse.
+                    </p>
 
                 <div class="space-y-3">
                     @for ($i = 0; $i < 3; $i++)
@@ -199,7 +231,8 @@
                             </div>
                         </div>
                     @endfor
-                </div>
+                    </div>
+                </details>
             </div>
         </div>
 

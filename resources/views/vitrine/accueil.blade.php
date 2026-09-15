@@ -132,11 +132,19 @@
                             <i data-lucide="church" class="w-5 h-5"></i>
                         </span>
                         <h3 class="font-bold mt-4">Une église seule</h3>
-                        <p class="text-[13px] text-slate-600 mt-1">Tout compris, un seul prix.</p>
+                        <p class="text-[13px] text-slate-600 mt-1">Une licence pour l'assemblée, puis son accès mensuel.</p>
                         <p class="mt-4 text-3xl font-bold tabular-nums">
                             {{ $departSeule->prixUsd() }}
                             <span class="text-[14px] font-semibold text-slate-500">/ {{ $departSeule->libellePeriode() }}</span>
                         </p>
+                        {{-- « Tout compris, un seul prix » etait faux : une eglise seule paie DEUX
+                             lignes, comme un reseau. Afficher la licence toute seule laissait
+                             decouvrir l'abonnement mensuel a la signature — le pire moment. --}}
+                        @if ($departAccesSeule)
+                            <p class="text-[13px] text-slate-500 mt-1">
+                                + {{ $departAccesSeule->prixUsd() }} par {{ $departAccesSeule->libellePeriode() }}
+                            </p>
+                        @endif
                     </div>
                 @endif
 

@@ -36,6 +36,11 @@ class Installation extends Model
 
         'rappel_jeton', 'rappel_le',
         'version', 'vue_le', 'compteurs', 'active',
+
+        // Fin de la période d'essai, posée UNE FOIS à l'activation (voir la migration
+        // ajouter_essai_fin_aux_installations) : la recalculer à chaque synchronisation rendait
+        // l'essai perpétuel.
+        'essai_fin',
     ];
 
     protected $casts = [
@@ -43,6 +48,7 @@ class Installation extends Model
         'vue_le' => 'datetime',
         'rappel_le' => 'datetime',
         'active' => 'boolean',
+        'essai_fin' => 'datetime',
     ];
 
     protected $hidden = ['cle_hash', 'rappel_jeton'];

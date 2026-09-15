@@ -9,6 +9,17 @@
     $licences = $parNature->get(Plan::LICENCE) ?? collect();
     $acces = $parNature->get(Plan::ACCES) ?? collect();
 
+    // LES ACCES « EGLISE SEULE » NE SONT PAS DES ACCES DE RESEAU. Ils sont de nature ACCES — meme
+    // mecanique, meme periodicite — mais ils s'adressent a une assemblee autonome et coutent trois
+    // fois le prix d'un acces en reseau, ou la licence de la vision amortit une partie. Laisses
+    // dans le rang du reseau, ils y apparaissaient comme deux offres cheres et inexplicables,
+    // pendant que le rang « eglise seule » n'affichait que sa licence annuelle.
+    //
+    // Le tri se fait sur le CODE et non sur `niveau` ou `quotas` : le code est l'identite du plan
+    // (c'est la cle de `updateOrCreate` dans PlanSeeder), les autres champs sont des reglages qui
+    // peuvent changer en console sans aucune intention de deplacer l'offre de rang.
+    [$accesSeuls, $acces] = $acces->partition(fn ($p) => str_starts_with($p->code, 'ACCES_SEULE'));
+
     // L'offre mise en avant est le palier STANDARD de chaque famille — celui que la plupart des
     // clients prendront. Sans repère, un visiteur devant trois colonnes équivalentes ne choisit
     // pas : il repousse.
@@ -45,13 +56,18 @@
                     Vous êtes une église seule
                 </h2>
                 <p class="text-[14px] text-slate-600 mt-2 max-w-2xl leading-relaxed">
-                    Aucune structure au-dessus de vous. Un seul prix, tout compris — rien à ajouter,
-                    rien à additionner.
+                    Aucune structure au-dessus de vous. Deux lignes seulement&nbsp;:
+                    <strong class="font-semibold text-slate-800">la licence, une fois par an</strong>,
+                    et <strong class="font-semibold text-slate-800">l'accès à votre espace, au
+                    mois</strong>. Rien d'autre ne s'y ajoute.
                 </p>
             </div>
 
+            <h3 class="px-5 sm:px-8 text-[13px] font-bold uppercase tracking-wider text-slate-400 mb-4">
+                1. La licence — une fois par an
+            </h3>
             <div class="relative" data-bandeau>
-                <div data-bandeau-piste tabindex="0" role="region" aria-label="Offres pour une église seule"
+                <div data-bandeau-piste tabindex="0" role="region" aria-label="Licences pour une église seule"
                      class="flex items-stretch gap-4 overflow-x-auto px-5 sm:px-8 pb-4
                             snap-x snap-mandatory scroll-px-5 sm:scroll-px-8
                             focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 rounded-2xl">
@@ -66,6 +82,47 @@
                 <div data-bandeau-droite aria-hidden="true"
                      class="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-14 bg-gradient-to-l from-white via-white/80 to-transparent transition-opacity duration-200"></div>
             </div>
+
+            @if ($accesSeuls->isNotEmpty())
+                <h3 class="px-5 sm:px-8 mt-8 text-[13px] font-bold uppercase tracking-wider text-slate-400 mb-4">
+                    2. L'accès à votre espace — au mois
+                </h3>
+                <div class="relative" data-bandeau>
+                    <div data-bandeau-piste tabindex="0" role="region" aria-label="Accès pour une église seule"
+                         class="flex items-stretch gap-4 overflow-x-auto px-5 sm:px-8 pb-4
+                                snap-x snap-mandatory scroll-px-5 sm:scroll-px-8
+                                focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 rounded-2xl">
+                        @php $precedent = null; @endphp
+                        @foreach ($accesSeuls as $plan)
+                            <x-carte-offre :plan="$plan" :base="$precedent" :en-avant="$enAvant($plan)" />
+                            @php $precedent = $plan; @endphp
+                        @endforeach
+                    </div>
+                    <div data-bandeau-gauche aria-hidden="true"
+                         class="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-14 bg-gradient-to-r from-white via-white/80 to-transparent opacity-0 transition-opacity duration-200"></div>
+                    <div data-bandeau-droite aria-hidden="true"
+                         class="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-14 bg-gradient-to-l from-white via-white/80 to-transparent transition-opacity duration-200"></div>
+                </div>
+            @endif
+
+            {{-- L'ADDITION, POSEE. Deux lignes annoncees separement laissent le visiteur faire un
+                 calcul qu'il fera de travers, ou pas du tout. On la pose nous-memes, a partir des
+                 offres reelles — jamais recopiee a la main, sinon elle ment au premier changement
+                 de prix. --}}
+            @php
+                $licenceSeule = $seule->firstWhere('palier', Plan::STANDARD) ?? $seule->first();
+                $accesSeul = $accesSeuls->firstWhere('palier', Plan::STANDARD) ?? $accesSeuls->first();
+            @endphp
+            @if ($licenceSeule && $accesSeul)
+                <div class="px-5 sm:px-8 mt-6">
+                    <p class="text-[13.5px] text-slate-600 leading-relaxed max-w-2xl">
+                        En Standard, la première année revient à
+                        <strong class="font-semibold text-slate-800 tabular-nums">{{ number_format(($licenceSeule->prix_usd_cents + 12 * $accesSeul->prix_usd_cents) / 100, 0, ',', ' ') }}&nbsp;$</strong>
+                        — {{ number_format($licenceSeule->prix_usd_cents / 100, 0, ',', ' ') }}&nbsp;$ de licence
+                        et douze mois d'accès à {{ number_format($accesSeul->prix_usd_cents / 100, 0, ',', ' ') }}&nbsp;$.
+                    </p>
+                </div>
+            @endif
         </section>
     @endif
 
@@ -109,7 +166,7 @@
                             </p>
                             <p class="text-[13.5px] text-slate-600 mt-2 leading-relaxed">
                                 Antenne, église ou cellule : le même prix pour le même palier.
-                                Une cellule en Starter et une grande église en Premium peuvent
+                                Une cellule en Standard et une grande église en Premium peuvent
                                 coexister dans le même réseau.
                             </p>
                         </div>
@@ -214,8 +271,8 @@
                             </div>
                         </dl>
                         <p class="text-[12.5px] text-slate-500 mt-4 leading-relaxed">
-                            Une entité qui n'a besoin que du socle prend le palier Starter et paie
-                            moins. Rien n'oblige tout le réseau à prendre le même.
+                            Une entité qui n'a besoin que de l'essentiel reste en Standard et paie
+                            moins. Rien n'oblige tout le réseau à prendre le même palier.
                         </p>
                     </div>
                 </div>

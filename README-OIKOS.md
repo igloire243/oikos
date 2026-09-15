@@ -92,12 +92,33 @@ Ces cinq mots reviennent partout. Les confondre est la première source d'erreur
 | Nature | Ce qu'elle ouvre | Rythme | Pourquoi ce rythme |
 |---|---|---|---|
 | **Licence** | l'espace **superadmin** (la Vision, le pilotage du réseau) | **annuel** | c'est l'engagement de tête. Un réseau ne se met pas en place au mois. |
-| **Accès** | les espaces **antenne / secteur / département / commission** | **mensuel** | on ajoute et on retire des églises en cours d'année. |
-| **Combinée** | tout, pour une église seule sans réseau | **mensuel** | une église indépendante n'a pas de « réseau » à licencier. |
+| **Accès** | les espaces **antenne / secteur / département** | **mensuel** | on ajoute et on retire des églises en cours d'année. |
+| **Combinée** | l'espace de la vision, pour une église seule sans réseau | **annuel** | c'est une licence, à tarif réduit — l'assemblée souscrit en plus son accès mensuel. |
 
-Trois paliers : **Starter**, **Standard**, **Premium**. La licence porte en plus une **grille de
-taille de réseau** (`paliers_taille`) : le prix suit le nombre d'entités déclarées, sans multiplier
-les lignes du catalogue.
+**Deux paliers : Standard et Premium.** (Il y en avait trois ; `STARTER` a été retiré le
+2026-09-12 — son contenu était entièrement inclus dans Standard, la fusion n'a donc rien retiré à
+personne. La constante `Plan::STARTER` demeure pour que les abonnements déjà signés continuent de
+s'afficher sous leur nom, mais le formulaire d'offre ne la propose plus : voir
+`Plan::PALIERS_VENDABLES`.)
+
+La ligne de partage est la même dans les trois familles, ce qui la rend explicable en une phrase :
+**Standard = tenir une église au quotidien ; Premium = piloter un réseau et l'analyser.** Passent
+donc en Premium les transferts, les finances consolidées, les médias, les nomenclatures et les
+dossiers de cadres.
+
+La licence porte en plus une **grille de taille de réseau** (`paliers_taille`) : le prix suit le
+nombre d'entités déclarées, sans multiplier les lignes du catalogue.
+
+**Sur un accès, la taille de l'entité ne change rien** — ni le prix, ni le palier. Une assemblée de
+3 000 personnes paie le même accès qu'une cellule de 80. C'est une limite assumée, pas un oubli
+(voir §13) : les quotas `membres` et `comptes` qui prétendaient jouer ce rôle ont été **retirés le
+2026-09-12**, parce qu'ils étaient annoncés au client sans que rien ne les applique — côté produit,
+`Licence::quotaAtteint()` n'est appelée que pour `antennes` et `extensions`. Ils étaient de surcroît
+faux de portée : `EtatLicence::quotas()` agrège pour toute l'installation, si bien qu'un réseau de
+neuf églises en Standard se serait partagé un seul plafond de 1 500 membres.
+
+Restent donc **deux quotas, et ils sont réels** : `antennes` et `extensions`, qui empêchent une
+offre « église seule » de servir à bâtir un réseau entier.
 
 ### La cascade — la règle en une phrase
 
@@ -108,7 +129,7 @@ français, affichée telle quelle) :
 
 1. pas de licence en cours sur l'installation ;
 2. la licence est expirée ou hors période de grâce ;
-3. le palier de l'accès dépasse celui de la licence (pas de Premium sous une Starter) ;
+3. le palier de l'accès dépasse celui de la licence (pas de Premium sous une Standard) ;
 4. le `plafond_acces` de la licence est atteint.
 
 La règle du **pro rata à l'émission** — un accès vendu en cours d'année doit s'arrêter avec la
@@ -117,7 +138,10 @@ surveiller à la main pour l'instant (voir §13).
 
 ### Les modules
 
-**33 modules répartis sur 6 espaces**, dont **28 vendables**. La clé porte toujours son espace :
+**52 modules répartis sur 4 espaces** (`superadmin`, `antenne`, `secteur`, `department`), dont
+**43 vendables**. Le compte se vérifie — `count(App\Support\Modules::toutes())` et `::vendables()` —
+plutôt que de se recopier : il a déjà bougé deux fois (découpage en sous-modules, dissolution de
+l'espace commission). La clé porte toujours son espace :
 `secteur.rapports`, `antenne.rapports` et `department.rapports` sont **trois modules différents** —
 un rapport d'antenne et un rapport de secteur ne sont pas le même écran.
 
@@ -754,7 +778,7 @@ Sur la fiche client, à côté d'une entité **VISION** → *Vendre* → choisis
 Puis, à côté d'une entité **EXTENSION** → *Vendre* → une offre d'**accès**.
 
 **Vérifiez la cascade au passage** : essayez de vendre un accès **Premium** sous une licence
-**Starter**. La vente doit être refusée, avec une phrase en français qui dit pourquoi.
+**Standard**. La vente doit être refusée, avec une phrase en français qui dit pourquoi.
 
 **Vérifiez :** `/console/factures`, onglet *À encaisser* — vos factures y sont, avec un numéro.
 
@@ -844,7 +868,7 @@ l'écran d'activation. C'est le parcours que vivra un vrai client.
 | la licence est nominative | changer `empreinte.txt` | refus |
 | la fiche se remplit seule | activer | nom, ville, responsable renseignés |
 | le rappel fonctionne | solder une facture | l'échéance bouge sans rien toucher |
-| la cascade tient | vendre Premium sous Starter | refus expliqué |
+| la cascade tient | vendre Premium sous Standard | refus expliqué |
 | l'unicité tient | ressaisir une référence | refus expliqué |
 | le module ferme | ouvrir un écran non vendu | `403` nommant le module |
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EntreeJournal;
 use App\Models\Reglage;
+use App\Support\PromoDecembre;
 use Illuminate\Http\Request;
 
 /**
@@ -34,7 +35,49 @@ class ReglageController extends Controller
         return view('reglages.index', [
             'parGroupe' => Reglage::orderBy('ordre')->get()->groupBy('groupe'),
             'groupes' => self::GROUPES,
+
+            // Combien d'accès attendent leur mois offert. Un bouton qui touche tout le parc d'un
+            // coup doit dire ce qu'il va faire AVANT qu'on clique.
+            'promo' => PromoDecembre::etat(),
         ]);
+    }
+
+    /**
+     * OFFRIR DÉCEMBRE À LA MAIN.
+     *
+     * La promo est planifiée au 1ᵉʳ décembre (routes/console.php), mais `Schedule::command()` ne
+     * fait rien sans un `schedule:run` en cron sur le serveur. Sans ce cron, la promo ne partait
+     * jamais et l'oubli ne se voyait qu'en janvier. Ce bouton est le filet.
+     *
+     * Sans confirmation élaborée, et c'est délibéré : l'opération est IDEMPOTENTE (voir
+     * PromoDecembre), donc cliquer deux fois ne crédite personne deux fois. Une confirmation
+     * suggérerait un danger qui n'existe pas.
+     */
+    public function offrirDecembre(Request $request)
+    {
+        $donnees = $request->validate([
+            // On accepte une année pour rattraper un décembre manqué, mais jamais une année à
+            // venir : créditer 2027 en septembre 2026 déplacerait des échéances sans raison, et
+            // l'idempotence empêcherait ensuite de le faire au bon moment.
+            'annee' => ['nullable', 'integer', 'min:2024', 'max:'.now()->year],
+        ], [
+            // Message écrit à la main : la console tourne en locale `en` (config/app.php), donc un
+            // message de validation par défaut sortirait en anglais au milieu d'un écran français.
+            'annee.max' => 'On ne peut offrir décembre que pour une année déjà entamée — :max au plus.',
+            'annee.min' => 'Année trop ancienne : la promotion existe depuis 2024.',
+        ]);
+
+        $resultat = PromoDecembre::offrir($donnees['annee'] ?? null);
+
+        if ($resultat['offerts'] === 0) {
+            return back()->with('avertissement', $resultat['deja'] > 0
+                ? "Décembre {$resultat['annee']} était déjà offert sur {$resultat['deja']} accès — rien à faire."
+                : "Aucun accès actif à créditer pour {$resultat['annee']}.");
+        }
+
+        return back()->with('ok',
+            "Décembre {$resultat['annee']} offert sur {$resultat['offerts']} accès — leur échéance "
+            .'a reculé d\'un mois. Les installations le verront à leur prochaine synchronisation.');
     }
 
     public function enregistrer(Request $request)

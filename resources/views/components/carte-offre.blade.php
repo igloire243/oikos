@@ -13,11 +13,14 @@
         \App\Models\Plan::PREMIUM => 'bg-emerald-600 text-white',
     ];
 
+    // SINGULIER ET PLURIEL. « 1 églises » se lisait sur l'offre église seule, dont le quota vaut
+    // justement 1 : le seul endroit où la carte affiche un chiffre unitaire est aussi celui qu'un
+    // prospect lit en premier. On garde donc les deux formes.
     $libellesQuotas = [
-        'antennes' => 'antennes',
-        'extensions' => 'églises',
-        'membres' => 'membres',
-        'comptes' => 'comptes utilisateurs',
+        'antennes' => ['antenne', 'antennes'],
+        'extensions' => ['église', 'églises'],
+        'membres' => ['membre', 'membres'],
+        'comptes' => ['compte utilisateur', 'comptes utilisateurs'],
     ];
 @endphp
 
@@ -40,11 +43,11 @@
         <p class="text-[13px] text-slate-600 mt-1.5 leading-relaxed">{{ $plan->argumentaire }}</p>
     @endif
 
-    {{-- LE PRIX. Pour une licence, on annonce le PREMIER palier précédé d'« à partir de » :
-         afficher le plus cher ferait fuir une petite communauté qui ne le paiera jamais, et
-         afficher le moins cher sans le dire serait une promesse qu'on ne tient pas. --}}
+    {{-- LE PRIX. Pour une licence, le montant en gros caractères est le SOCLE : ce n'est pas le
+         prix final, et le dire est la seule façon honnête de l'afficher. « À partir de » convient
+         aux deux modes — formule comme anciennes tranches. --}}
     <div class="mt-5">
-        @if ($plan->aUneGrilleDeTailles())
+        @if ($plan->suitLaTaille())
             <p class="text-[11.5px] font-semibold text-slate-500">à partir de</p>
         @endif
         <p class="text-3xl font-bold tabular-nums">{{ $plan->prixAfficheUsd() }}</p>
@@ -64,7 +67,29 @@
         </p>
     @endif
 
-    @if ($plan->aUneGrilleDeTailles())
+    {{-- LA FORMULE, ÉCRITE EN TOUTES LETTRES ET CHIFFRÉE.
+         Un tableau de tranches se relit trois fois ; une phrase et trois exemples se comprennent
+         du premier coup. Les exemples sont CALCULÉS — recopiés à la main, ils mentiraient au
+         premier changement de tarif, et le client s'en apercevrait sur sa facture. --}}
+    @if ($plan->aUnTarifParEntite())
+        <div class="mt-4 rounded-xl bg-slate-50 border border-slate-100 p-3">
+            <p class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2">Selon la taille du réseau</p>
+            <p class="text-[12.5px] text-slate-700 leading-relaxed">
+                <strong class="font-bold">{{ $plan->prixUsd() }}</strong> par {{ $plan->libellePeriode() }},
+                plus <strong class="font-bold">{{ $plan->parEntiteUsd() }}</strong> par entité.
+            </p>
+            <ul class="mt-2 space-y-1 border-t border-slate-200 pt-2">
+                @foreach ([5, 20, 60] as $exemple)
+                    <li class="flex items-baseline justify-between gap-3 text-[12.5px]">
+                        <span class="text-slate-600">{{ $exemple }} entités</span>
+                        <span class="font-bold tabular-nums whitespace-nowrap">
+                            {{ number_format($plan->prixPourTaille($exemple)['usd_cents'] / 100, 0, ',', ' ') }} $
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @elseif ($plan->aUneGrilleDeTailles())
         <div class="mt-4 rounded-xl bg-slate-50 border border-slate-100 p-3">
             <p class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-2">Selon la taille du réseau</p>
             <ul class="space-y-1">
@@ -105,8 +130,14 @@
                     <span>
                         {{-- null = sans limite. C'est un avantage, pas une donnée manquante :
                              il faut l'écrire, pas laisser un vide. --}}
-                        {{ $valeur === null ? 'Sans limite de' : $valeur }}
-                        {{ $libellesQuotas[$cle] ?? $cle }}
+                        @php
+                            $formes = $libellesQuotas[$cle] ?? [$cle, $cle];
+                            // « Sans limite de » appelle toujours le pluriel : « sans limite de membre »
+                            // se lirait comme une faute.
+                            $libelle = $formes[($valeur !== null && (int) $valeur <= 1) ? 0 : 1];
+                        @endphp
+                        {{ $valeur === null ? 'Sans limite de' : number_format((int) $valeur, 0, ',', ' ') }}
+                        {{ $libelle }}
                     </span>
                 </li>
             @endforeach
@@ -115,15 +146,15 @@
 
     {{-- LES MODULES — PAR DIFFÉRENCE AVEC LE PALIER PRÉCÉDENT.
 
-         Réafficher les six modules du Starter dans la carte Standard, puis les treize du Standard
-         dans la Premium, produisait des colonnes d'une hauteur d'écran que personne ne compare :
-         l'œil relit trois fois la même liste au lieu de repérer ce qui change. « Tout ce que
-         contient Starter, plus… » dit la même chose en trois lignes, et met en évidence la seule
-         information qui décide d'un achat — l'écart.
+         Réafficher les quinze modules du Standard dans la carte Premium produisait des
+         colonnes d'une hauteur d'écran que personne ne compare : l'œil relit deux fois la même
+         liste au lieu de repérer ce qui change. « Tout ce que contient Standard, plus… » dit la
+         même chose en trois lignes, et met en évidence la seule information qui décide d'un
+         achat — l'écart.
 
          L'HÉRITAGE N'EST AFFIRMÉ QUE S'IL EST VRAI : on vérifie que le palier précédent est
-         RÉELLEMENT inclus. Si vous composez un jour une offre Standard qui retire un module du
-         Starter, la carte repasse d'elle-même à la liste complète plutôt que d'annoncer un
+         RÉELLEMENT inclus. Si vous composez un jour une offre Premium qui retire un module du
+         Standard, la carte repasse d'elle-même à la liste complète plutôt que d'annoncer un
          « tout ce qui précède » mensonger. --}}
     @php
         $tous = $plan->fonctionnalites;

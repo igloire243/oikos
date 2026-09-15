@@ -37,7 +37,14 @@ class SiteController extends Controller
             // reproduirait la grille qu'on vient de simplifier.
             'departSeule' => $publics->get(Plan::COMBINEE)?->first(),
             'departLicence' => $publics->get(Plan::LICENCE)?->first(),
-            'departAcces' => $publics->get(Plan::ACCES)?->first(),
+            // L'ACCES ANNONCE EST CELUI DU RESEAU. Les deux familles d'acces cohabitent dans la
+            // meme nature ACCES ; sans ce tri, « + X par entite » aurait pu afficher le tarif de
+            // l'eglise seule, trois fois plus cher, le jour ou un changement d'`ordre` remonte
+            // ACCES_SEULE_* en tete.
+            'departAcces' => $publics->get(Plan::ACCES)
+                ?->first(fn ($p) => ! str_starts_with($p->code, 'ACCES_SEULE')),
+            'departAccesSeule' => $publics->get(Plan::ACCES)
+                ?->first(fn ($p) => str_starts_with($p->code, 'ACCES_SEULE')),
             // Les modules de l'espace d'une église : c'est ce qu'un visiteur reconnaît. Ceux de
             // la vision parlent d'un siège de réseau, et n'ont de sens qu'une fois qu'on sait de
             // quel produit on parle.

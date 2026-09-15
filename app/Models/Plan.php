@@ -13,14 +13,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * La licence est payée une fois pour toute la structure, par la vision : elle met le système en
  * service, et elle inclut l'espace administratif de la vision elle-même — celle-ci ne paie donc
  * pas d'accès en plus. Ensuite, chaque entité (antenne, église, cellule) paie SON accès, au palier
- * qui lui convient. Une cellule en Starter et une grande église en Premium peuvent coexister dans
+ * qui lui convient. Une cellule en Standard et une grande église en Premium peuvent coexister dans
  * le même réseau.
  *
- * L'OFFRE COMBINÉE EST UNE FACILITÉ COMMERCIALE, PAS UNE TROISIÈME MÉCANIQUE
- * ---------------------------------------------------------------------------
+ * L'OFFRE COMBINÉE EST UNE LICENCE RÉDUITE, PAS UN FORFAIT TOUT COMPRIS
+ * ----------------------------------------------------------------------
  * Une église seule a besoin d'une licence (personne au-dessus d'elle ne la paiera) et d'un accès.
- * Lui présenter deux lignes serait exact et dissuasif. COMBINEE contient les deux dans un prix
- * unique. Techniquement, elle produit un abonnement comme les autres.
+ * COMBINEE est la PREMIÈRE des deux lignes : une licence à l'année, à tarif réduit, qui joue le
+ * rôle de licence pour la cascade. L'assemblée souscrit en plus son accès mensuel
+ * (ACCES_SEULE_*). Le commentaire précédent annonçait « les deux dans un prix unique » — ce n'est
+ * pas ce que fait le seeder, et c'est la lecture qui avait fait écrire « tout compris, un seul
+ * prix » sur la page d'accueil, où le client découvrait le mensuel à la signature.
  */
 class Plan extends Model
 {
@@ -34,25 +37,44 @@ class Plan extends Model
     public const NATURES = [
         self::LICENCE => 'Licence de la structure',
         self::ACCES => 'Accès par entité',
-        self::COMBINEE => 'Église seule (tout compris)',
+        self::COMBINEE => 'Église seule (licence réduite)',
     ];
 
     public const STARTER = 'STARTER';
     public const STANDARD = 'STANDARD';
     public const PREMIUM = 'PREMIUM';
 
+    /**
+     * TOUS LES PALIERS CONNUS, y compris ceux qu'on ne vend plus. Sert à AFFICHER : un abonnement
+     * Starter signé avant 2026-09-12 doit continuer à se nommer « Starter » sur sa facture et dans
+     * l'historique du client. Retirer la clé afficherait « STARTER » brut à ces endroits.
+     */
     public const PALIERS = [
         self::STARTER => 'Starter',
         self::STANDARD => 'Standard',
         self::PREMIUM => 'Premium',
     ];
 
-    /** Du plus petit au plus grand — c'est cet ordre que `autorise()` compare. */
+    /**
+     * CE QU'ON PEUT ENCORE COMPOSER. Trois paliers ont été ramenés à deux : laisser « Starter »
+     * dans le formulaire de création d'offre permettrait de reconstituer en trois clics la grille
+     * qu'on vient de simplifier, sans que personne ne s'en aperçoive avant la page publique.
+     */
+    public const PALIERS_VENDABLES = [
+        self::STANDARD => 'Standard',
+        self::PREMIUM => 'Premium',
+    ];
+
+    /**
+     * Du plus petit au plus grand — c'est cet ordre que `autorise()` compare. STARTER y reste :
+     * une licence Starter encore en cours doit continuer à plafonner les accès de son réseau.
+     */
     public const RANG_PALIERS = [self::STARTER => 1, self::STANDARD => 2, self::PREMIUM => 3];
 
     protected $fillable = [
         'code', 'nature', 'palier', 'niveau', 'nom', 'argumentaire',
-        'prix_usd_cents', 'prix_cdf', 'paliers_taille', 'plafond_acces',
+        'prix_usd_cents', 'prix_cdf', 'prix_par_entite_usd_cents', 'prix_par_entite_cdf',
+        'paliers_taille', 'plafond_acces',
         'periode_mois', 'quotas', 'fonctionnalites', 'modes_paiement', 'is_public', 'ordre',
     ];
 
@@ -117,21 +139,46 @@ class Plan extends Model
         return $this->prixUsd();
     }
 
+    /**
+     * Cette offre se facture-t-elle à la FORMULE — un socle, plus un montant par entité ?
+     *
+     * C'est le mode retenu depuis le 2026-09-12. Le socle est `prix_usd_cents` ; le montant par
+     * entité est la colonne dédiée. Voir la migration tarif_par_entite_sur_les_plans pour ce que
+     * les tranches avaient d'intenable.
+     */
+    public function aUnTarifParEntite(): bool
+    {
+        return $this->prix_par_entite_usd_cents !== null;
+    }
+
+    /** L'ancien mode : un forfait par tranche de taille. Conservé pour les offres déjà vendues. */
     public function aUneGrilleDeTailles(): bool
     {
         return is_array($this->paliers_taille) && count($this->paliers_taille) > 1;
     }
 
+    /** Le prix dépend-il de la taille du réseau, d'une manière ou d'une autre ? */
+    public function suitLaTaille(): bool
+    {
+        return $this->aUnTarifParEntite() || $this->aUneGrilleDeTailles();
+    }
+
     /**
      * Le prix réel pour un réseau de N entités.
      *
-     * On parcourt les paliers dans l'ordre et on retient le PREMIER dont le plafond couvre la
-     * taille demandée. Le dernier palier a un `max` nul : c'est celui qui n'a pas de plafond, et
-     * il attrape tout ce qui dépasse. Sans lui, un réseau de deux cents églises ne trouverait
-     * aucun prix et l'on afficherait zéro — le pire des résultats possibles sur une page de tarifs.
+     * LA FORMULE D'ABORD, LES TRANCHES EN REPLI. Une offre signée sous l'ancien mode doit continuer
+     * à se facturer comme elle a été vendue : on ne migre pas les abonnements en place, on laisse
+     * les deux modes cohabiter et c'est la présence du montant par entité qui tranche.
      */
     public function prixPourTaille(int $entites): array
     {
+        if ($this->aUnTarifParEntite()) {
+            return [
+                'usd_cents' => (int) $this->prix_usd_cents + $entites * (int) $this->prix_par_entite_usd_cents,
+                'cdf' => (int) $this->prix_cdf + $entites * (int) $this->prix_par_entite_cdf,
+            ];
+        }
+
         $grille = $this->paliers_taille ?: [];
 
         foreach ($grille as $palier) {
@@ -146,6 +193,12 @@ class Plan extends Model
         }
 
         return ['usd_cents' => (int) $this->prix_usd_cents, 'cdf' => (int) $this->prix_cdf];
+    }
+
+    /** Le montant par entité, formaté — pour les écrans. */
+    public function parEntiteUsd(): string
+    {
+        return $this->formaterUsd((int) $this->prix_par_entite_usd_cents);
     }
 
     /**

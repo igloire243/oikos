@@ -113,7 +113,7 @@ class Cascade
      */
     public static function prix(Installation $installation, Plan $plan): array
     {
-        if (! $plan->aUneGrilleDeTailles()) {
+        if (! $plan->suitLaTaille()) {
             return [
                 'usd_cents' => (int) $plan->prix_usd_cents,
                 'cdf' => (int) $plan->prix_cdf,

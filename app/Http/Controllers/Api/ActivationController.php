@@ -93,6 +93,13 @@ class ActivationController extends Controller
             'version' => $donnees['version'] ?? $installation->version,
             'rappel_jeton' => $donnees['rappel'] ?? $installation->rappel_jeton,
             'vue_le' => now(),
+
+            // LA FIN D'ESSAI SE FIXE ICI, ET UNE SEULE FOIS. Le `??` n'est pas une précaution de
+            // style : une installation peut être réactivée (clé réémise après une réinstallation,
+            // par exemple), et il ne faut pas qu'une réactivation offre un second essai. Ce que
+            // le réglage `essai_jours` vaut aujourd'hui ne concerne que les activations à venir.
+            'essai_fin' => $installation->essai_fin
+                ?? now()->addDays(\App\Models\Reglage::entier('essai_jours', 30)),
         ])->save();
 
         $cle->consommer($donnees['empreinte'], $request->ip());

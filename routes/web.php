@@ -148,6 +148,8 @@ Route::prefix('console')->group(function () {
 
         Route::get('/reglages', [ReglageController::class, 'index'])->name('reglages.index');
         Route::put('/reglages', [ReglageController::class, 'enregistrer'])->name('reglages.enregistrer');
+        // Promo « décembre offert », déclenchée à la main — le cron n'est pas toujours en place.
+        Route::post('/reglages/offrir-decembre', [ReglageController::class, 'offrirDecembre'])->name('reglages.offrir-decembre');
 
         // L'AGRÉGATEUR MOBILE MONEY, CONFIGURABLE DEPUIS LA CONSOLE (voir ConfigPasserelle).
         Route::get('/paiement', [PaiementConfigController::class, 'edit'])->name('paiement.config');

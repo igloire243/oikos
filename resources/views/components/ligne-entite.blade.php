@@ -49,6 +49,34 @@
                 <i data-lucide="refresh-cw" class="w-3 h-3"></i> Renouveler
             </button>
         </form>
+
+        {{-- SUSPENDRE / RÉACTIVER. AbonnementController::changerStatut() existait déjà, route
+             comprise, mais AUCUNE vue ne l'appelait : on pouvait vendre et renouveler, jamais
+             interrompre. Or c'est le seul levier face à un client qui ne paie pas, et c'est aussi
+             ce qui permet de vérifier que la fermeture d'un accès produit bien ses effets chez lui.
+
+             Le `stopPropagation` répond au même besoin que pour « Renouveler » ci-dessus : replier
+             la branche en cliquant serait déroutant. --}}
+        <form method="POST" action="{{ route('abonnements.statut', $abonnement) }}" class="inline"
+              onclick="event.stopPropagation()">
+            @csrf
+            @if ($abonnement->ouvreLEcriture())
+                <input type="hidden" name="statut" value="{{ \App\Models\Abonnement::SUSPENDU }}">
+                <button type="submit"
+                        title="Fermer l'accès de cette entité sans résilier son abonnement"
+                        onclick="return confirm('Suspendre l'abonnement de « {{ $entite->nom }} » ? Son espace se fermera à sa prochaine synchronisation.')"
+                        class="inline-flex items-center gap-1 rounded-md bg-white border border-slate-300 px-2 py-0.5 text-[11.5px] font-semibold text-amber-700 hover:bg-amber-50">
+                    <i data-lucide="pause" class="w-3 h-3"></i> Suspendre
+                </button>
+            @else
+                <input type="hidden" name="statut" value="{{ \App\Models\Abonnement::ACTIF }}">
+                <button type="submit"
+                        title="Réouvrir l'accès de cette entité"
+                        class="inline-flex items-center gap-1 rounded-md bg-white border border-slate-300 px-2 py-0.5 text-[11.5px] font-semibold text-emerald-700 hover:bg-emerald-50">
+                    <i data-lucide="play" class="w-3 h-3"></i> Réactiver
+                </button>
+            @endif
+        </form>
     @else
         <x-etiq ton="ambre" icone="circle-alert">sans abonnement</x-etiq>
 

@@ -14,6 +14,32 @@
         Ce qui change sans toucher au code : le taux, ce que vous promettez, et où l'argent arrive.
     </p>
 
+    {{-- ÉTAT VIDE EXPLICITE. Cet écran ne fait que dérouler les réglages PRÉSENTS EN BASE (voir
+         ReglageController::index) : sur une installation où ReglageSeeder n'a pas été joué, la
+         page s'affichait entre son titre et son bouton « Enregistrer », sans un seul champ et
+         sans rien dire. Rien n'indiquait qu'il manquait une étape d'installation, et on cherchait
+         le défaut du côté du code. --}}
+    @if ($parGroupe->isEmpty())
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-[13px] text-amber-900">
+            <div class="flex gap-3">
+                <i data-lucide="triangle-alert" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                <div>
+                    <p class="font-semibold">Aucun réglage enregistré.</p>
+                    <p class="mt-1">
+                        Les valeurs de départ n'ont pas encore été posées sur cette installation.
+                        Lancez&nbsp;:
+                    </p>
+                    <p class="mt-2">
+                        <code class="font-mono bg-white border border-amber-200 rounded px-2 py-1">php artisan db:seed --class=ReglageSeeder</code>
+                    </p>
+                    <p class="mt-2 text-amber-800">
+                        Puis rechargez cette page pour renseigner le taux, le délai promis et vos
+                        coordonnées d'encaissement.
+                    </p>
+                </div>
+            </div>
+        </div>
+    @else
     <form method="POST" action="{{ route('reglages.enregistrer') }}">
         @csrf @method('PUT')
 
@@ -75,6 +101,59 @@
             </button>
         </div>
     </form>
+    @endif
+
+    {{-- ── PROMO « DÉCEMBRE OFFERT » ────────────────────────────────────────────────────
+         Elle est planifiée au 1ᵉʳ décembre, mais la planification suppose un `schedule:run` en
+         cron sur le serveur. Quand ce cron n'existe pas, la promo ne part jamais et l'oubli ne se
+         voit qu'en janvier. Ce bouton rend l'opération faisable sans accès au terminal, et dit
+         combien d'accès attendent AVANT qu'on clique. ──────────────────────────────────────── --}}
+    <div class="rounded-2xl border border-slate-200 bg-white mt-5 overflow-hidden">
+        <div class="flex items-center gap-2.5 px-5 py-3.5 border-b border-slate-100 text-[13px] font-bold text-slate-700">
+            <i data-lucide="gift" class="w-4 h-4 text-emerald-600"></i>
+            Promotion « mois des fêtes »
+        </div>
+        <div class="px-5 py-5">
+            <p class="text-[13px] text-slate-600 leading-relaxed max-w-2xl">
+                Décembre est offert sur <strong class="font-semibold">tous les accès</strong> — églises,
+                cellules et antennes. Leur échéance recule d'un mois, sans facture. La licence annuelle
+                n'est pas concernée. Un accès souscrit en novembre en bénéficie comme les autres.
+            </p>
+
+            {{-- Deux libellés sans verbe, à dessein : « 0 accès attendent son mois » se lisait mal
+                 (le zéro prend le singulier en français) et toute tournure verbale oblige à
+                 accorder sur un nombre qu'on ne connaît qu'à l'exécution. --}}
+            <dl class="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-[13px]">
+                <div>
+                    <dt class="text-slate-500">Accès à créditer pour {{ $promo['annee'] }}</dt>
+                    <dd class="text-xl font-bold tabular-nums text-slate-900">{{ $promo['eligibles'] }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500">Déjà crédités cette année</dt>
+                    <dd class="text-xl font-bold tabular-nums text-slate-900">{{ $promo['deja'] }}</dd>
+                </div>
+            </dl>
+
+            <form method="POST" action="{{ route('reglages.offrir-decembre') }}" class="mt-4">
+                @csrf
+                <input type="hidden" name="annee" value="{{ $promo['annee'] }}">
+                <button type="submit" @disabled($promo['eligibles'] === 0)
+                        class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold transition
+                               {{ $promo['eligibles'] === 0
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shadow-sm' }}">
+                    <i data-lucide="gift" class="w-4 h-4"></i>
+                    Offrir décembre {{ $promo['annee'] }}
+                </button>
+            </form>
+
+            <p class="text-[12px] text-slate-400 mt-3 leading-relaxed max-w-2xl">
+                L'opération peut être relancée sans risque : chaque accès ne reçoit son mois qu'une
+                fois par année. Équivalent en ligne de commande&nbsp;:
+                <code class="font-mono bg-slate-50 border border-slate-200 rounded px-1 py-0.5">php artisan abonnement:offrir-decembre</code>.
+            </p>
+        </div>
+    </div>
 
     <div class="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] text-slate-600 mt-5">
         <i data-lucide="info" class="w-4 h-4 mt-0.5 shrink-0 text-slate-400"></i>
