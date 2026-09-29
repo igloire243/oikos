@@ -201,7 +201,9 @@ return [
                 'nom' => 'Dossiers disciplinaires des cadres',
                 'icone' => 'gavel',
                 'vendable' => true,
-                'texte' => "Les dossiers instruits par l'antenne sur un berger, une église ou un membre de commission, avec historique.",
+                // « membre de commission » retiré : l'espace Commission a été dissous (voir CLAUDE.md §6),
+                // et ce texte partait tel quel sur la page publique et dans le dossier commercial.
+                'texte' => "Les dossiers instruits par l'antenne sur un berger, une église ou un responsable de département, avec historique.",
             ],
             'antenne.communications' => [
                 'nom' => 'Communications',
