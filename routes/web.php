@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\CatalogueController;
+use App\Http\Controllers\ClientsController;
+use App\Http\Controllers\InstallationsController;
 use App\Http\Controllers\TableauDeBordController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,5 +28,21 @@ Route::prefix('console')->group(function () {
         ->group(function () {
             Route::get('/', TableauDeBordController::class)->name('accueil');
             Route::get('/catalogue', [CatalogueController::class, 'index'])->name('catalogue.index');
+
+            Route::prefix('clients')->name('clients.')->group(function () {
+                Route::get('/', [ClientsController::class, 'index'])->name('index');
+                Route::post('/', [ClientsController::class, 'store'])->name('store');
+                Route::get('/{client}', [ClientsController::class, 'show'])->name('show');
+                Route::put('/{client}', [ClientsController::class, 'update'])->name('update');
+                Route::post('/{client}/installations', [InstallationsController::class, 'store'])->name('installations.store');
+            });
+
+            Route::prefix('installations')->name('installations.')->group(function () {
+                Route::put('/{installation}', [InstallationsController::class, 'update'])->name('update');
+                Route::patch('/{installation}/activation', [InstallationsController::class, 'activation'])->name('activation');
+                Route::post('/{installation}/cles', [InstallationsController::class, 'emettreCle'])->name('cles.store');
+                Route::post('/{installation}/rappel', [InstallationsController::class, 'rappeler'])->name('rappel');
+            });
+            Route::patch('/cles/{cle}/revocation', [InstallationsController::class, 'revoquerCle'])->name('cles.revoquer');
         });
 });

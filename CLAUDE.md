@@ -137,11 +137,43 @@ npm run lint && npm run format
 | Lot | Contenu | État |
 |---|---|---|
 | **C0 — Socle** | stack, authentification des opérateurs, design, catalogue miroir 64/51 | **livré** |
-| C1 — Le branchement | clients, installations, clés d'activation, API d'activation et de synchronisation, licence signée | à venir |
+| **C1 — Le branchement** | clients, installations, clés d'activation, API d'activation et de synchronisation, licence signée | **livré** |
 | C2 — Vendre | offres, abonnements par entité, cascade et prorata contraint, renouvellement | à venir |
 | C3 — Encaisser | factures, paiements partiels, référence unique, rappel de l'installation | à venir |
 | C4 — La vitrine | site commercial, réglages, tableau de bord, demandes de contact | à venir |
 | P1 — Côté produit | activation, synchronisation, licence vérifiée, barrière `module:` par entité | à venir (dépôt du produit) |
 | C5 — Paiement en ligne | passerelles mobile money, éteint par défaut | à venir |
 
-**26 tests.**
+### Le Lot C1, en détail
+
+| Écran / route | Ce qu'il fait |
+|---|---|
+| `console.clients.index` | les clients, cherchables, avec leur nombre d'installations |
+| `console.clients.show` | la fiche : chaque installation avec son **état lu sur ses dates**, l'arbre d'entités qu'elle a remonté, ses clés, et la clé émise **montrée une seule fois** |
+| `POST /api/v1/activation` | une clé courte contre une clé de synchronisation et une licence signée |
+| `POST /api/v1/synchronisation` | l'arbre, les compteurs, la carte de visite montent ; l'état signé descend |
+
+Les écrivains : `App\Metier\Licence\Cles` (seul écrivain de `cles_activation`), `Activation`,
+`Synchronisation`, `EtatLicence` (le **seul** endroit où la réponse se construit — activer et
+synchroniser rendent le même objet), `Signature`, `Rappel` ; `App\Metier\Clients\Installations`
+côté écran ; `App\Metier\Journal\Journal::tracer()` pour chaque geste qui se conteste.
+
+Ce qui a été corrigé par rapport à l'ancienne console, et que les tests verrouillent :
+
+- **L'essai a une fin FIXE**, calculée depuis la première activation (`activee_le`). L'ancienne
+  répondait « maintenant + 30 jours » à chaque appel : un essai repoussé chaque nuit, donc éternel.
+  Réactiver un serveur ne l'offre pas une seconde fois.
+- **Une machine, une installation** : une empreinte déjà rattachée à une autre fiche est refusée —
+  sinon un même serveur se facture deux fois, ou ouvre l'abonnement de l'une à l'autre.
+- **Aucune route publique ne crée de ligne** : le client et l'installation existent avant que la
+  clé soit émise. Une API qui créerait des fiches remplirait la base depuis Internet.
+- **Une entité absente d'une synchronisation n'est jamais supprimée** : l'envoi peut être tronqué.
+- **Le jeton de rappel est chiffré en base** (cast `encrypted`) : une copie de la base ne suffit pas
+  à réveiller le parc. La clé de synchronisation, elle, n'est gardée qu'en SHA-256.
+- **Un code inconnu reçoit un refus vague** ; une clé connue mais usée, révoquée ou expirée dit
+  pourquoi — la bonne clé mérite qu'on fasse gagner un appel, un essai au hasard non.
+
+`modules` vaut `null` (tout ouvert) et `entites` est vide tant que rien n'est vendu : c'est le
+Lot C2 qui les remplit, et la barrière `module:` du produit (P1) qui les lira.
+
+**46 tests.**
