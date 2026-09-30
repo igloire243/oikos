@@ -1,0 +1,380 @@
+{
+    "empreinte": "7ca1947c61b97501118181d5230c7ffeaa802414a9b792cedc79f9d4d314287e",
+    "espaces": {
+        "vision": {
+            "libelle": "Espace de la Vision",
+            "groupes": {
+                "reseau": "Implantations & Réseau",
+                "securite": "Paramètres & Sécurité"
+            },
+            "modules": {
+                "comptes": {
+                    "libelle": "Comptes et utilisateurs",
+                    "icone": "users",
+                    "vendable": true
+                },
+                "entites": {
+                    "libelle": "Antennes, extensions, départements",
+                    "icone": "network",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "membres": {
+                    "libelle": "Registre du réseau (tous les membres)",
+                    "icone": "users-round",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "transferts": {
+                    "libelle": "Transferts de membres (réseau entier)",
+                    "icone": "arrow-left-right",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "profils": {
+                    "libelle": "Profils spirituels et ministères",
+                    "icone": "sparkles",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "programmes": {
+                    "libelle": "Programmes et cultes de la Vision",
+                    "icone": "calendar-days",
+                    "vendable": true
+                },
+                "finances": {
+                    "libelle": "Finances et trésorerie de la Vision",
+                    "icone": "wallet",
+                    "vendable": true
+                },
+                "rapports": {
+                    "libelle": "Rapports et statistiques",
+                    "icone": "bar-chart-3",
+                    "vendable": true
+                },
+                "export": {
+                    "libelle": "Centre d'export",
+                    "icone": "download",
+                    "vendable": true
+                },
+                "communications": {
+                    "libelle": "Communications",
+                    "icone": "megaphone",
+                    "vendable": true
+                },
+                "medias": {
+                    "libelle": "Médias de la Vision",
+                    "icone": "image",
+                    "vendable": true
+                },
+                "evenements": {
+                    "libelle": "Organisation des événements",
+                    "icone": "party-popper",
+                    "vendable": false
+                },
+                "commissions": {
+                    "libelle": "Commissions",
+                    "icone": "handshake",
+                    "vendable": false
+                },
+                "messagerie": {
+                    "libelle": "Messagerie interne",
+                    "icone": "messages-square",
+                    "vendable": false
+                },
+                "parametres": {
+                    "libelle": "Configuration générale et site public",
+                    "icone": "settings",
+                    "vendable": false,
+                    "groupe": "securite"
+                },
+                "securite": {
+                    "libelle": "Journaux, sauvegardes et maintenance",
+                    "icone": "shield-check",
+                    "vendable": false,
+                    "groupe": "securite"
+                }
+            }
+        },
+        "antenne": {
+            "libelle": "Espace de l'Antenne",
+            "groupes": {
+                "reseau": "Bergers & Extensions",
+                "pastoral": "Suivi pastoral",
+                "bilans": "Bilans & Instances"
+            },
+            "modules": {
+                "extensions": {
+                    "libelle": "Églises rattachées",
+                    "icone": "church",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "bergers": {
+                    "libelle": "Affectation des bergers",
+                    "icone": "user-check",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "membres": {
+                    "libelle": "Annuaire régional des membres",
+                    "icone": "users",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "transferts": {
+                    "libelle": "Transferts de membres",
+                    "icone": "arrow-left-right",
+                    "vendable": true,
+                    "groupe": "reseau"
+                },
+                "prieres": {
+                    "libelle": "Suivi pastoral régional",
+                    "icone": "hand-heart",
+                    "vendable": true,
+                    "groupe": "pastoral"
+                },
+                "supervision": {
+                    "libelle": "Mode supervision",
+                    "icone": "eye",
+                    "vendable": true,
+                    "groupe": "pastoral"
+                },
+                "visites": {
+                    "libelle": "Visites d'extensions",
+                    "icone": "route",
+                    "vendable": true,
+                    "groupe": "pastoral"
+                },
+                "services": {
+                    "libelle": "Services et cultes",
+                    "icone": "calendar-check",
+                    "vendable": true
+                },
+                "departements": {
+                    "libelle": "Départements",
+                    "icone": "layers",
+                    "vendable": true
+                },
+                "formations": {
+                    "libelle": "Formations",
+                    "icone": "graduation-cap",
+                    "vendable": true
+                },
+                "finances": {
+                    "libelle": "Finances de l'antenne",
+                    "icone": "wallet",
+                    "vendable": true
+                },
+                "delegations": {
+                    "libelle": "Délégations aux événements",
+                    "icone": "bus",
+                    "vendable": false
+                },
+                "inventaire": {
+                    "libelle": "Inventaire du matériel",
+                    "icone": "boxes",
+                    "vendable": true
+                },
+                "rapports": {
+                    "libelle": "Rapports d'activités",
+                    "icone": "bar-chart-3",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "export": {
+                    "libelle": "Centre d'export",
+                    "icone": "download",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "reunions": {
+                    "libelle": "Réunions mensuelles",
+                    "icone": "users-round",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "dossiers": {
+                    "libelle": "Dossiers disciplinaires des cadres",
+                    "icone": "folder-lock",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "communications": {
+                    "libelle": "Communications",
+                    "icone": "megaphone",
+                    "vendable": true
+                },
+                "medias": {
+                    "libelle": "Médias de l'antenne",
+                    "icone": "image",
+                    "vendable": true
+                },
+                "messagerie": {
+                    "libelle": "Messagerie interne",
+                    "icone": "messages-square",
+                    "vendable": false
+                },
+                "parametres": {
+                    "libelle": "Paramètres de l'antenne",
+                    "icone": "settings",
+                    "vendable": false
+                },
+                "comptes": {
+                    "libelle": "Gestion des comptes",
+                    "icone": "user-cog",
+                    "vendable": false
+                }
+            }
+        },
+        "extension": {
+            "libelle": "Espace du Berger",
+            "groupes": {
+                "membres": "Membres & Suivi"
+            },
+            "modules": {
+                "membres": {
+                    "libelle": "Annuaire des membres",
+                    "icone": "users",
+                    "vendable": true,
+                    "groupe": "membres"
+                },
+                "transferts": {
+                    "libelle": "Transferts de membres",
+                    "icone": "arrow-left-right",
+                    "vendable": true,
+                    "groupe": "membres"
+                },
+                "visites": {
+                    "libelle": "Visites et suivi pastoral",
+                    "icone": "route",
+                    "vendable": true,
+                    "groupe": "membres"
+                },
+                "prieres": {
+                    "libelle": "Requêtes de prière",
+                    "icone": "hand-heart",
+                    "vendable": true,
+                    "groupe": "membres"
+                },
+                "espace_membre": {
+                    "libelle": "Espace personnel des membres",
+                    "icone": "smartphone",
+                    "vendable": true,
+                    "groupe": "membres"
+                },
+                "cultes": {
+                    "libelle": "Cultes et présences",
+                    "icone": "church",
+                    "vendable": true
+                },
+                "programmes": {
+                    "libelle": "Programmes et calendriers",
+                    "icone": "calendar-days",
+                    "vendable": true
+                },
+                "activites": {
+                    "libelle": "Calendrier annuel des activités",
+                    "icone": "calendar-range",
+                    "vendable": true
+                },
+                "discipulariat": {
+                    "libelle": "Baptêmes",
+                    "icone": "droplets",
+                    "vendable": true
+                },
+                "formations": {
+                    "libelle": "Formations",
+                    "icone": "graduation-cap",
+                    "vendable": true
+                },
+                "equipes": {
+                    "libelle": "Équipes et départements",
+                    "icone": "layers",
+                    "vendable": true
+                },
+                "discipline": {
+                    "libelle": "Discipline des ouvriers",
+                    "icone": "scale",
+                    "vendable": true
+                },
+                "tresorerie": {
+                    "libelle": "Trésorerie locale",
+                    "icone": "wallet",
+                    "vendable": true
+                },
+                "inventaire": {
+                    "libelle": "Inventaire du matériel",
+                    "icone": "boxes",
+                    "vendable": true
+                },
+                "rapports": {
+                    "libelle": "Rapports de l'extension",
+                    "icone": "bar-chart-3",
+                    "vendable": true
+                },
+                "medias": {
+                    "libelle": "Médias de l'extension",
+                    "icone": "image",
+                    "vendable": true
+                },
+                "messagerie": {
+                    "libelle": "Messagerie interne",
+                    "icone": "messages-square",
+                    "vendable": true
+                },
+                "comptes": {
+                    "libelle": "Gestion des comptes",
+                    "icone": "user-cog",
+                    "vendable": false
+                },
+                "parametres": {
+                    "libelle": "Paramètres de l'extension",
+                    "icone": "settings",
+                    "vendable": false
+                }
+            }
+        },
+        "departement": {
+            "libelle": "Espace du Département",
+            "groupes": [],
+            "modules": {
+                "equipe": {
+                    "libelle": "Membres de l'équipe",
+                    "icone": "users",
+                    "vendable": true
+                },
+                "plannings": {
+                    "libelle": "Plannings et appel nominal",
+                    "icone": "clipboard-list",
+                    "vendable": true
+                },
+                "programmes": {
+                    "libelle": "Programmes du département",
+                    "icone": "calendar-days",
+                    "vendable": true
+                },
+                "rapports": {
+                    "libelle": "Rapports du département",
+                    "icone": "bar-chart-3",
+                    "vendable": true
+                },
+                "ressources": {
+                    "libelle": "Ressources",
+                    "icone": "package",
+                    "vendable": true
+                },
+                "messagerie": {
+                    "libelle": "Messagerie interne",
+                    "icone": "messages-square",
+                    "vendable": false
+                },
+                "comptes": {
+                    "libelle": "Gestion des comptes",
+                    "icone": "user-cog",
+                    "vendable": false
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+# Analyse statique — Larastan (PHPStan + connaissance d'Eloquent et des facades).
+#
+# Niveau 6 : impose que tout soit type (parametres, retours, proprietes) sans exiger encore
+# la rigueur des niveaux 8-9 sur les valeurs nulles. C'est le palier a partir duquel l'outil
+# attrape de vraies fautes — un appel de methode inexistante, une relation mal nommee — sans
+# noyer le signal sous des avertissements de style.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+
+
+    paths:
+        - app
+        - database
+        - routes
+
+    # Les migrations decrivent un schema, elles n'ont pas de logique a analyser, et leurs
+    # classes anonymes font remonter du bruit sans valeur.
+    excludePaths:
+        - database/migrations

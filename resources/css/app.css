@@ -1,106 +1,181 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-}
-
-/* Les icônes Lucide arrivent en <i> et sont remplacées par un <svg> au chargement. Sans cette
-   règle, la page saute d'un cran au moment du remplacement : le <i> vide n'occupe aucune place,
-   le <svg> en occupe une. On réserve donc l'espace dès le départ. */
-[data-lucide] {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    vertical-align: -0.125em;
-    flex-shrink: 0;
-}
-
-/* ------------------------------------------------------------------------------------------
-   LES BARRES DE DÉFILEMENT
-   ------------------------------------------------------------------------------------------
-   Deux traitements, pour deux rôles opposés.
-
-   1. LA BARRE VERTICALE DE LA PAGE reste VISIBLE, simplement plus discrète : fine, grise, sans
-      les flèches et le fond gris clair du rendu par défaut de Windows. C'est le seul repère qui
-      dise « la page continue plus bas » et « vous en êtes ici ». La masquer ferait gagner trois
-      pixels et perdre la seule mesure de la longueur d'un document.
-
-   2. LES RANGS DÉFILANTS À L'HORIZONTALE (les bandeaux) n'ont PAS de barre du tout. Une barre
-      horizontale sous un rang de cartes coupe la mise en page en deux, et le navigateur la fait
-      apparaître et disparaître au survol, ce qui fait sauter le contenu de quelques pixels.
-
-      CE QUE CE MASQUAGE COÛTE, ET COMMENT C'EST PAYÉ. La barre est le signal « ceci défile ».
-      En la retirant, on doit le remplacer, sinon un visiteur ne saura jamais qu'il y a des
-      offres à droite. Deux choses le font à sa place : les VOILES latéraux, qui ne s'allument
-      que du côté où il reste quelque chose, et la mention « Faites défiler » au-dessus du rang.
-      Si l'un des deux disparaît un jour, il faudra rendre la barre — pas retirer l'autre.
-
-   Deux syntaxes sont nécessaires : `scrollbar-*` pour Firefox, `::-webkit-scrollbar` pour Chrome,
-   Edge et Safari. Aucune ne remplace l'autre. */
-
-@supports (scrollbar-width: thin) {
-    html {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
+/*
+ * ÉCHELLE D'AFFICHAGE RÉDUITE.
+ *
+ * Sur grand écran, l'interface est rendue à 75 %. Un produit de gestion d'église affiche des
+ * listes de plusieurs centaines de membres et des feuilles de présence : gagner un quart de
+ * densité change ce qu'on voit sans défiler.
+ *
+ * 75 %, et non 80 % : l'ancien projet documentait 80 % comme la valeur de l'espace de travail
+ * interne d'akabservice-v2, mais appliquait en réalité 75 % PARTOUT — admin, pages d'extension et
+ * vitrine publique — en l'écrivant noir sur blanc dans chacun de ses trois gabarits : « pour
+ * rester cohérent d'un bout à l'autre du produit ». Une reconstruction à l'identique reprend ce
+ * que l'ancien fait, pas ce que sa propre documentation aurait dû dire.
+ *
+ * On agit sur le `font-size` du <html>, et surtout PAS sur `zoom` : `zoom` fausse les calculs de
+ * position et casse le défilement des modales. Toutes les unités `rem` de Tailwind suivent.
+ */
+@media (min-width: 1024px) {
+    html.echelle-reduite {
+        font-size: 75%;
     }
 }
 
-html::-webkit-scrollbar,
-*::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+/*
+ * LE TÉLÉPHONE : UNE TAILLE PROPORTIONNELLE À L'APPAREIL.
+ *
+ * Toute l'interface est en `rem` (Tailwind) : faire varier la taille de la racine fait varier
+ * TOUT d'un seul geste — textes, marges, boutons, icônes — dans les mêmes proportions. Un petit
+ * téléphone (320-360 px) reçoit un peu moins de 16 px, pour que les écrans denses ne se
+ * transforment pas en colonnes d'un mot ; dès 400 px on est à la taille standard. Jamais en
+ * dessous de 14 px : la lisibilité passe avant la densité.
+ */
+@media (max-width: 639px) {
+    html {
+        font-size: clamp(14px, calc(10px + 1.5vw), 16px);
+    }
+
+    /*
+     * 16 PX DANS LES CHAMPS, TOUJOURS. En dessous, Safari sur iPhone zoome tout seul sur le champ
+     * qu'on touche, et la page reste agrandie après la saisie — l'utilisateur doit la « pincer »
+     * pour retrouver l'écran. C'est le défaut mobile le plus agaçant qui soit, et il se règle ici.
+     */
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
 }
 
-*::-webkit-scrollbar-track {
-    background: transparent;
+/*
+ * LE TOUCHER. `manipulation` supprime le délai de 300 ms que les navigateurs mobiles gardent pour
+ * détecter un double-tap zoom : un bouton répond au doigt immédiatement. Le reflet gris du tap
+ * (WebKit) est retiré — chaque bouton a déjà son propre état actif.
+ */
+a,
+button,
+[role='button'],
+label,
+summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
-*::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 9999px;
-
-    /* La bordure transparente amincit le curseur sans réduire la zone qu'on peut attraper à la
-       souris : on garde une cible de 10 pixels pour un trait qui en montre 6. */
-    border: 2px solid transparent;
-    background-clip: content-box;
+/*
+ * LES BOUTONS-ICÔNES, AU DOIGT. Valider, modifier, retirer : la plupart des lignes du produit
+ * portent des boutons faits d'une seule icône de 16 px, avec 6 px de marge — 28 px de cible au
+ * mieux, quand un doigt en demande 44. Sur téléphone, tout bouton qui ne contient QU'UNE icône
+ * reçoit une cible de 40 px, sans rien changer à l'icône elle-même.
+ */
+@media (max-width: 639px) {
+    button:has(> svg:only-child),
+    a:has(> svg:only-child) {
+        min-height: 2.5rem;
+        min-width: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-*::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
+/*
+ * UNE APPLICATION, PAS UNE PAGE QU'ON ÉTIRE. Demandé par l'utilisateur : l'écran se laissait
+ * tirer vers la gauche, la droite, le haut et le bas (l'« élastique » du navigateur), et zoomer
+ * au pincement. `overscroll-behavior: none` coupe l'élastique et le « tirer pour recharger » ;
+ * `overflow-x: clip` empêche qu'un élément trop large fasse glisser la page de côté — les zones
+ * qui défilent vraiment (onglets, tableaux larges) gardent leur propre défilement. Le zoom est
+ * bloqué par la balise viewport (app.blade.php) et, pour Safari qui l'ignore, par `gesturestart`
+ * (app.js). Les tailles restent proportionnelles à l'appareil (voir plus haut) : c'est ce qui
+ * rend le zoom inutile.
+ */
+html,
+body {
+    overscroll-behavior: none;
+    overflow-x: clip;
 }
 
-/* Sur les surfaces sombres — la barre latérale de la console — un curseur gris clair fait une
-   entaille blanche. On le prend dans les verts du fond. */
-.barre-sombre {
-    scrollbar-color: rgba(52, 211, 153, 0.35) transparent;
+/* Le contenu ne se cache jamais sous l'encoche ni sous la barre système. */
+body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
-.barre-sombre::-webkit-scrollbar-thumb {
-    background-color: rgba(52, 211, 153, 0.35);
-}
-
-.barre-sombre::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(52, 211, 153, 0.55);
-}
-
-/* Aucune barre. Appliqué d'office aux bandeaux, et disponible ailleurs sous le nom `sans-barre`.
-   `-ms-overflow-style` sert aux vieux Edge, encore installés sur des postes qu'on ne met pas
-   à jour. */
-[data-bandeau-piste],
-.sans-barre {
+/* Barres de défilement masquées ; le défilement, lui, reste actif. */
+html {
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-[data-bandeau-piste]::-webkit-scrollbar,
-.sans-barre::-webkit-scrollbar {
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.defilement-discret::-webkit-scrollbar {
+    display: none;
     width: 0;
     height: 0;
-    display: none;
+}
+
+.defilement-discret {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/*
+ * LA COULEUR DE LA CONSOLE — un violet que ne porte aucun des cinq espaces du produit.
+ *
+ * Les composants viennent du produit, qui teint chaque espace par des variables `--marque-*`
+ * plutôt que par des classes composées à l'exécution (Tailwind ne génère que ce qu'il lit). Ils
+ * les lisent donc ici aussi. Posées sur `:root` et non sur la mise en page : une modale est
+ * téléportée dans <body>, hors du conteneur, et une variable absente ne peint rien — le bouton
+ * principal d'une modale serait du texte blanc sur un fond qui n'existe pas.
+ */
+:root {
+    --marque-50: #f5f3ff;
+    --marque-100: #ede9fe;
+    --marque-200: #ddd6fe;
+    --marque-300: #c4b5fd;
+    --marque-400: #a78bfa;
+    --marque-500: #8b5cf6;
+    --marque-600: #7c3aed;
+    --marque-700: #6d28d9;
+    --marque-800: #5b21b6;
+    --marque-900: #4c1d95;
+}
+
+.marque-fond {
+    background-color: var(--marque-500);
+}
+.marque-fond-doux {
+    background-color: var(--marque-50);
+}
+.marque-texte {
+    color: var(--marque-600);
+}
+.marque-bordure {
+    border-color: var(--marque-200);
+}
+.marque-anneau {
+    --tw-ring-color: var(--marque-500);
+}
+
+.marque-degrade {
+    background-image: linear-gradient(135deg, var(--marque-500) 0%, var(--marque-700) 100%);
+}
+
+/* Apparition discrète des messages éphémères — 0,28 s, pas une animation de plus. */
+@keyframes apparition-montante {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.apparition {
+    animation: apparition-montante 0.28s ease-out both;
 }
