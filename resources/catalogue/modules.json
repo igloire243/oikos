@@ -4,7 +4,7 @@
         "vision": {
             "libelle": "Espace de la Vision",
             "groupes": {
-                "reseau": "Implantations & Réseau",
+                "reseau": "Implantations de la Vision",
                 "securite": "Paramètres & Sécurité"
             },
             "modules": {
@@ -20,13 +20,13 @@
                     "groupe": "reseau"
                 },
                 "membres": {
-                    "libelle": "Registre du réseau (tous les membres)",
+                    "libelle": "Registre de la Vision (tous les membres)",
                     "icone": "users-round",
                     "vendable": true,
                     "groupe": "reseau"
                 },
                 "transferts": {
-                    "libelle": "Transferts de membres (réseau entier)",
+                    "libelle": "Transferts de membres (toute la Vision)",
                     "icone": "arrow-left-right",
                     "vendable": true,
                     "groupe": "reseau"
