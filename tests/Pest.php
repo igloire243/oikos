@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /*
@@ -17,6 +18,11 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+// Aucun test ne parle au serveur d'un vrai client : le rappel d'une installation (Lot C3) ferait
+// attendre jusqu'à six secondes sur une adresse de démonstration, et pourrait un jour atteindre
+// une machine qui existe.
+beforeEach(fn () => Http::fake());
 
 /*
 |--------------------------------------------------------------------------

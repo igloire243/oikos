@@ -3,6 +3,7 @@
 namespace App\Metier\Commerce;
 
 use App\Metier\Journal\Journal;
+use App\Metier\Licence\Rappel;
 use App\Models\Abonnement;
 use App\Models\Entite;
 use App\Models\Installation;
@@ -98,7 +99,7 @@ class Ventes
             throw ValidationException::withMessages(['offre_id' => $apercu['empechement']]);
         }
 
-        return DB::transaction(function () use ($entite, $offre, $devise, $apercu, $par) {
+        $periode = DB::transaction(function () use ($entite, $offre, $devise, $apercu, $par) {
             $abonnement = Abonnement::query()->lockForUpdate()->firstOrCreate(
                 ['entite_id' => $entite->id],
                 ['installation_id' => $entite->installation_id],
@@ -136,8 +137,18 @@ class Ventes
                     'au_prorata' => $apercu['au_prorata'],
                 ], $par);
 
+            // La facture naît avec la vente, dans la même transaction : une vente sans facture
+            // laisserait une période servie que personne ne réclame (voir Facturation).
+            Facturation::emettre($periode, $par);
+
             return $periode;
         });
+
+        // L'argent d'abord, l'accès ensuite, le rappel en dernier et HORS transaction : un serveur
+        // client injoignable ne doit ni retarder ni annuler une vente.
+        Rappel::prevenir($entite->installation);
+
+        return $periode;
     }
 
     /**
@@ -158,6 +169,8 @@ class Ventes
             'motif' => $motif,
             'acces_coupes' => $abonnement->entite->type === Entite::VISION ? self::accesSousLaLicence($abonnement->installation) : 0,
         ], $par);
+
+        Rappel::prevenir($abonnement->installation);
     }
 
     /**
