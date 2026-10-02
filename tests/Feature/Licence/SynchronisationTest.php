@@ -119,3 +119,11 @@ it("rappelle l'installation avec son jeton, sans données, et n'échoue jamais",
     // Sans jeton de rappel, on n'essaie même pas.
     expect(Rappel::prevenir(Installation::factory()->create()))->toBeFalse();
 });
+
+it('signe pareil une liste d\'entités vide, qu\'elle soit un objet ou un tableau', function () {
+    // Le produit reçoit un tableau décodé là où la console construit un objet : sans aller-retour
+    // JSON avant de signer, `{}` et `[]` donnaient deux messages et une signature « fausse ».
+    $base = ['statut' => 'ESSAI', 'modules' => null];
+
+    expect(Signature::message([...$base, 'entites' => (object) []]))->toBe(Signature::message([...$base, 'entites' => []]));
+});

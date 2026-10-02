@@ -257,6 +257,13 @@ class Signature
     {
         unset($etat['signature']);
 
+        // L'ALLER-RETOUR JSON, avant de signer — un piège qu'un test a trouvé. La console construit
+        // `entites` en objet (`(object) []`), qui s'écrit `{}` ; le produit, lui, reçoit un tableau
+        // décodé, vide, qui s'écrit `[]`. Même licence, deux messages, signature « fausse » sur
+        // toute installation en essai (aucune entité encore vendue). En passant les deux côtés par
+        // un décodage en tableaux, `{}` et `[]` deviennent le même message.
+        $etat = json_decode((string) json_encode($etat), true);
+
         self::trier($etat);
 
         return json_encode($etat, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
