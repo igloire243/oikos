@@ -50,9 +50,9 @@ class CreerClesSignature extends Command
         $this->warn('  Ce secret ne doit jamais quitter ce serveur, ni entrer dans Git.');
         $this->newLine();
 
-        $this->info('=== 2. DANS config/oikos.php DU PRODUIT ===');
+        $this->info('=== 2. DANS config/cle_publique.php DU PRODUIT ===');
         $this->newLine();
-        $this->line("'cle_publique' => '".$cles['publique']."',");
+        $this->line("'valeur' => '".$cles['publique']."',");
         $this->newLine();
         $this->line('  Celle-ci se lit sans danger : elle vérifie, elle ne signe pas.');
         $this->line('  Elle va DANS LE CODE, pas dans le .env — un client qui peut la remplacer');

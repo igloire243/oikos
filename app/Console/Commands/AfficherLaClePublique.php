@@ -30,9 +30,9 @@ class AfficherLaClePublique extends Command
         }
 
         $this->newLine();
-        $this->info("À coller dans config/oikos.php DU PRODUIT, entre les guillemets de 'cle_publique' :");
+        $this->info("À coller dans config/cle_publique.php DU PRODUIT, entre les guillemets de 'valeur' :");
         $this->newLine();
-        $this->line("'cle_publique' => '".$publique."',");
+        $this->line("'valeur' => '".$publique."',");
         $this->newLine();
         $this->comment('Elle se lit sans danger : elle vérifie, elle ne signe pas. Elle va dans le code du produit, jamais dans son .env.');
 
