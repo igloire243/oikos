@@ -45,8 +45,14 @@
                 #demarrage img { width: 7rem; height: 7rem; border-radius: 1.6rem; box-shadow: 0 .4rem 1.4rem rgba(0,0,0,.15); }
             }
         </style>
-        {{-- La console n'a rien à faire dans un moteur de recherche. --}}
-        <meta name="robots" content="noindex, nofollow">
+        {{-- La console n'a rien à faire dans un moteur de recherche — mais le site commercial, si :
+             c'est sa raison d'être. --}}
+        @unless (request()->routeIs('vitrine.*', 'demande.*'))
+            <meta name="robots" content="noindex, nofollow">
+        @endunless
+        @if (request()->routeIs('vitrine.*', 'demande.*'))
+            <meta name="description" content="Oikos : la gestion de votre église, de la cellule à la Vision — membres, présences, finances, équipes et rapports.">
+        @endif
 
         <title inertia>{{ config('app.name', 'Oikos Console') }}</title>
 

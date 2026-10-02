@@ -136,6 +136,27 @@ class Offre extends Model
     }
 
     /**
+     * Les modules VENDUS que l'offre ouvre, rangés par espace et nommés en toutes lettres.
+     *
+     * Une seule façon de la lire, pour l'écran « Offres » de l'opérateur ET pour la vitrine publique :
+     * deux listes écrites chacune de son côté finiraient par promettre au visiteur autre chose que
+     * ce que l'opérateur vend. Les écrans qui ne se vendent pas ne comptent pas : ils sont toujours
+     * ouverts.
+     *
+     * @return list<array{espace: string, modules: list<string>}>
+     */
+    public function modulesParEspace(): array
+    {
+        return collect($this->clesOuvertes())
+            ->filter(fn (string $cle) => Modules::estVendable($cle))
+            ->groupBy(fn (string $cle) => Modules::toutes()[$cle]['espace'])
+            ->map(fn ($cles, $espace) => [
+                'espace' => Modules::libelleEspace((string) $espace),
+                'modules' => $cles->map(fn (string $cle) => Modules::libelle($cle))->values()->all(),
+            ])->values()->all();
+    }
+
+    /**
      * Le prix pour un réseau de cette taille, dans cette devise — la grille d'une licence, ou le
      * prix fixe de l'offre.
      */

@@ -12,6 +12,7 @@ use App\Http\Controllers\OffresController;
 use App\Http\Controllers\PushController;
 use App\Http\Controllers\ReglagesController;
 use App\Http\Controllers\TableauDeBordController;
+use App\Http\Controllers\VitrineController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,7 +26,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::redirect('/', '/console');
+// Le site commercial est la porte d'entrée publique ; la console, elle, vit sous /console.
+Route::get('/', [VitrineController::class, 'accueil'])->name('vitrine.accueil');
+Route::get('/tarifs', [VitrineController::class, 'tarifs'])->name('vitrine.tarifs');
 
 // La seule porte publique de la console avec l'API machine : un formulaire borné et freiné.
 Route::get('/demande', [DemandePubliqueController::class, 'formulaire'])->name('demande.formulaire');

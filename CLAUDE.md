@@ -290,3 +290,24 @@ silencieuses : le tableau de bord ne dit jamais autre chose que ce que le télé
 *Reste du site commercial* : seul le formulaire de demande existe. Une vitrine complète (offres
 publiques, tarifs, présentation) est à décider avec l'utilisateur — elle ne peut pas se construire sans
 savoir ce qu'on y promet.
+
+**Le site commercial est livré — la vitrine publique, à la racine.** `/` (présentation) et `/tarifs`,
+plus le formulaire `/demande` du lot C4 ; la console reste sous `/console`. Rien n'y est promis qui
+n'existe pas : pas de chiffre de clientèle, pas de témoignage, pas de bouton « acheter » tant qu'aucun
+paiement n'est branché (C5) — la seule action est « Demander une offre ».
+
+**Les tarifs sont LUS dans les offres, jamais écrits dans la page** (`App\Metier\Vitrine\Tarifs`) :
+un prix tapé en dur serait une seconde copie, et le jour où l'opérateur change un tarif, le site
+annoncerait l'ancien. Seules les offres PUBLIQUES et en vente s'affichent (une offre « négociée » ou
+retirée n'apparaît jamais), dans les deux devises au choix du visiteur — jamais une conversion. La
+liste des écrans d'une offre vient de `Offre::modulesParEspace()`, la même que celle de l'écran
+« Offres » de l'opérateur : deux listes écrites chacune de leur côté promettraient au visiteur autre
+chose que ce qui se vend. La page dit aussi comment ça s'assemble (licence d'abord, accès sous le
+palier qu'elle permet, écrans de réglages toujours ouverts).
+
+`Layouts/LayoutVitrine.vue` reprend la colonne `100dvh` du reste du produit sous `md` (milieu qui
+défile, pied de page dans la zone) : aucun défilement de fenêtre à 390 px. La vitrine est **indexable**
+(`<meta name="description">`, pas de `noindex`) alors que la console reste fermée aux moteurs de
+recherche : c'est `routeIs('vitrine.*', 'demande.*')` qui décide, dans `app.blade.php`.
+*Piège de mise en page* : sur téléphone, l'en-tête n'a la place que d'un bouton — « Connexion » passe
+dans le menu, et le bouton d'action se raccourcit (« Nous écrire »).

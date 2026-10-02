@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Route;
 /**
  * LE SOCLE DE LA CONSOLE — une porte, et une seule façon d'y avoir une clé.
  */
-it('garde tout sous /console, connexion comprise, et renvoie un visiteur vers la connexion', function () {
-    $this->get('/')->assertRedirect('/console');
+it('garde la console sous /console, connexion comprise, et laisse la vitrine publique à la racine', function () {
+    $this->get('/')->assertOk();
     $this->get('/console')->assertRedirect('/console/login');
     $this->get('/console/catalogue')->assertRedirect('/console/login');
 
