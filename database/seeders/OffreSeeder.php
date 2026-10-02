@@ -34,7 +34,7 @@ class OffreSeeder extends Seeder
     private const EGLISE_STANDARD = [
         ...self::EGLISE_STARTER,
         'extension.programmes', 'extension.prieres', 'extension.visites', 'extension.activites', 'extension.discipulariat',
-        'extension.formations', 'extension.medias', 'extension.discipline',
+        'extension.formations', 'extension.medias', 'extension.discipline', 'extension.communications',
         'departement.programmes', 'departement.ressources',
     ];
 

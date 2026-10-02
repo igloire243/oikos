@@ -1,5 +1,5 @@
 {
-    "empreinte": "7ca1947c61b97501118181d5230c7ffeaa802414a9b792cedc79f9d4d314287e",
+    "empreinte": "7b665d35ed4543fa9f89e7e4e5cfed52d977ca9554c2fbffb1d1459ea76bfa33",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -266,6 +266,11 @@
                 "cultes": {
                     "libelle": "Cultes et présences",
                     "icone": "church",
+                    "vendable": true
+                },
+                "communications": {
+                    "libelle": "Communications",
+                    "icone": "megaphone",
                     "vendable": true
                 },
                 "programmes": {
