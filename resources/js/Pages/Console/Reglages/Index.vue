@@ -87,7 +87,8 @@ const enregistrerLEditeur = () => formEditeur.put(route('console.reglages.autres
             :icone="Settings"
         />
 
-        <div class="mx-auto max-w-2xl space-y-4 py-5">
+        <!-- `min-w-0` + `w-full` : un enfant de flex ou de grille ne rétrécit pas sous son contenu, et une liste déroulante aux libellés longs élargissait toute la page sur téléphone. -->
+        <div class="mx-auto w-full min-w-0 max-w-2xl space-y-4 px-4 py-5 sm:px-0">
             <Onglets v-model="onglet" :options="onglets" />
 
             <!-- ============================== LICENCE -->
@@ -145,7 +146,7 @@ const enregistrerLEditeur = () => formEditeur.put(route('console.reglages.autres
                     </div>
                     <p class="mt-1 text-xs leading-relaxed text-slate-500">
                         Allumé, chaque facture a une adresse que le client ouvre pour payer chez le prestataire ;
-                        la facture se solde quand celui-ci confirme. Éteint, les pages <code>/payer</code> répondent
+                        la facture se solde quand celui-ci confirme. Éteint, les pages <code class="break-all">/payer</code> répondent
                         « introuvable » et aucun lien n'est proposé.
                     </p>
 
@@ -154,7 +155,7 @@ const enregistrerLEditeur = () => formEditeur.put(route('console.reglages.autres
                         <span><strong>Allumer le paiement en ligne</strong></span>
                     </label>
 
-                    <div class="mt-3">
+                    <div class="mt-3 min-w-0">
                         <ChampSelect
                             v-model="formPaiement.passerelle"
                             label="Prestataire"

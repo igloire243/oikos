@@ -293,7 +293,7 @@ const basculerPush = async () => {
 
             <main
                 scroll-region
-                class="defilement-discret px-4 pb-6 pt-4 max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overscroll-contain sm:px-6 lg:px-8 lg:pb-12 lg:pt-6"
+                class="defilement-discret px-4 pb-6 pt-4 max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overflow-x-hidden max-lg:overscroll-contain sm:px-6 lg:px-8 lg:pb-12 lg:pt-6"
             >
                 <div v-if="!messagesMasques" class="space-y-2">
                     <div

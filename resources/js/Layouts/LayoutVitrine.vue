@@ -103,7 +103,7 @@ const actif = (nom) => route().current(nom);
             </nav>
         </header>
 
-        <div class="scroll-region min-h-0 flex-1 overflow-y-auto md:overflow-visible" scroll-region>
+        <div class="scroll-region min-h-0 flex-1 overflow-y-auto overflow-x-hidden md:overflow-visible" scroll-region>
             <main>
                 <slot />
             </main>

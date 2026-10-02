@@ -46,8 +46,8 @@ class ReglagesController extends Controller
                 'actif' => PaiementsEnLigne::actif(),
                 'passerelle' => PaiementsEnLigne::nomDeLaPasserelle(),
                 'choix' => [
-                    ['valeur' => 'flutterwave', 'libelle' => 'Flutterwave (cartes, mobile money)'],
-                    ['valeur' => 'simulee', 'libelle' => 'Simulé — pour essayer le parcours (interdit en production)'],
+                    ['valeur' => 'flutterwave', 'libelle' => 'Flutterwave'],
+                    ['valeur' => 'simulee', 'libelle' => 'Simulé (essais)'],
                 ],
                 'cle' => ['posee' => Reglages::secretPose('flutterwave_cle_secrete'), 'origine' => Reglages::origine('flutterwave_cle_secrete')],
                 'hash' => ['posee' => Reglages::secretPose('flutterwave_hash'), 'origine' => Reglages::origine('flutterwave_hash')],
