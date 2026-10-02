@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AbonnementsController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\InstallationsController;
+use App\Http\Controllers\OffresController;
 use App\Http\Controllers\TableauDeBordController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,5 +46,18 @@ Route::prefix('console')->group(function () {
                 Route::post('/{installation}/rappel', [InstallationsController::class, 'rappeler'])->name('rappel');
             });
             Route::patch('/cles/{cle}/revocation', [InstallationsController::class, 'revoquerCle'])->name('cles.revoquer');
+
+            Route::prefix('offres')->name('offres.')->group(function () {
+                Route::get('/', [OffresController::class, 'index'])->name('index');
+                Route::post('/', [OffresController::class, 'store'])->name('store');
+                Route::put('/{offre}', [OffresController::class, 'update'])->name('update');
+                Route::patch('/{offre}/retrait', [OffresController::class, 'retirer'])->name('retirer');
+                Route::patch('/{offre}/retablissement', [OffresController::class, 'retablir'])->name('retablir');
+            });
+
+            // Vendre se fait sur une ENTITÉ, jamais sur un client en bloc.
+            Route::get('/entites/{entite}/vente', [AbonnementsController::class, 'apercu'])->name('ventes.apercu');
+            Route::post('/entites/{entite}/vente', [AbonnementsController::class, 'store'])->name('ventes.store');
+            Route::patch('/abonnements/{abonnement}/resiliation', [AbonnementsController::class, 'resilier'])->name('abonnements.resilier');
         });
 });

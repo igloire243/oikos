@@ -51,5 +51,6 @@ it('ouvre l\'accueil et le catalogue à un opérateur, avec le menu partagé', f
         ->assertInertia(fn ($page) => $page->component('Console/Catalogue')
             ->has('espaces', 4)
             ->where('menu.1.entrees.0.route', 'console.clients.index')
-            ->where('menu.1.entrees.1.route', null));
+            ->where('menu.1.entrees.1.route', 'console.offres.index')
+            ->where('menu.1.entrees.2.route', null));
 });

@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Metier\Catalogue\Modules;
 use App\Metier\Clients\Installations;
+use App\Metier\Commerce\Montant;
+use App\Models\Abonnement;
 use App\Models\CleActivation;
 use App\Models\Client;
 use App\Models\Entite;
 use App\Models\Installation;
+use App\Models\Offre;
+use App\Models\PeriodeAbonnement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -67,7 +71,7 @@ class ClientsController extends Controller
 
     public function show(Request $requete, Client $client): Response
     {
-        $client->load(['installations.entites', 'installations.clesActivation.emisePar']);
+        $client->load(['installations.entites.abonnement.periodes.offre', 'installations.clesActivation.emisePar']);
 
         return Inertia::render('Console/Clients/Fiche', [
             'client' => [
@@ -83,6 +87,14 @@ class ClientsController extends Controller
             'installations' => $client->installations->sortBy('id')->values()->map(fn (Installation $i) => $this->presenterInstallation($i)),
             // Montrée UNE fois, juste après l'émission : la base ne garde que son empreinte.
             'cle_emise' => $requete->session()->get('cle_emise'),
+            // Ce qu'on peut vendre, rangé par niveau : la modale de vente ne propose à une église
+            // que des offres d'église. Le PRIX affiché vient de l'aperçu, pas d'ici — une licence
+            // dépend de la taille du réseau.
+            'offres_en_vente' => Offre::query()->enVente()->orderBy('ordre')->get()->groupBy('niveau')
+                ->map(fn ($offres) => $offres->map(fn (Offre $o) => [
+                    'valeur' => $o->id,
+                    'libelle' => $o->nom.' — '.($o->periode_mois === 12 ? 'annuelle' : ($o->periode_mois === 1 ? 'mensuelle' : $o->periode_mois.' mois')),
+                ])->values()),
         ]);
     }
 
@@ -139,6 +151,7 @@ class ClientsController extends Controller
             'nom' => $e->nom,
             'effectif' => $e->effectif,
             'vue_le' => $e->vue_le?->translatedFormat('j M Y'),
+            'abonnement' => $this->presenterAbonnement($e),
         ];
 
         $antennes = $entites->where('type', Entite::ANTENNE)->sortBy('nom');
@@ -164,6 +177,42 @@ class ClientsController extends Controller
         }
 
         return $noeuds;
+    }
+
+    /**
+     * Ce qu'on sait de l'abonnement d'une entité, pour la ligne de l'arbre : son état, l'offre qui
+     * court, jusqu'à quand, et l'historique des périodes vendues.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function presenterAbonnement(Entite $entite): ?array
+    {
+        $abonnement = $entite->abonnement;
+
+        if ($abonnement === null) {
+            return null;
+        }
+
+        $aujourdhui = now()->startOfDay();
+        $courante = $abonnement->periodeAu($aujourdhui) ?? $abonnement->dernierePeriode();
+        $etat = $abonnement->etat();
+
+        return [
+            'id' => $abonnement->id,
+            'etat' => $etat,
+            'libelle_etat' => Abonnement::ETATS[$etat],
+            'offre' => $courante?->offre->nom,
+            'fin' => $abonnement->dernierePeriode()?->fin->translatedFormat('j F Y'),
+            'motif_resiliation' => $abonnement->motif_resiliation,
+            'periodes' => $abonnement->periodes->sortByDesc('debut')->values()->map(fn (PeriodeAbonnement $p) => [
+                'id' => $p->id,
+                'offre' => $p->offre->nom,
+                'du' => $p->debut->translatedFormat('j M Y'),
+                'au' => $p->fin->translatedFormat('j M Y'),
+                'montant' => Montant::formater($p->montant_centimes, $p->devise),
+                'au_prorata' => $p->au_prorata,
+            ]),
+        ];
     }
 
     /** @return array<string, mixed> */

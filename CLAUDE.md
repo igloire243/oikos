@@ -138,7 +138,7 @@ npm run lint && npm run format
 |---|---|---|
 | **C0 — Socle** | stack, authentification des opérateurs, design, catalogue miroir 64/51 | **livré** |
 | **C1 — Le branchement** | clients, installations, clés d'activation, API d'activation et de synchronisation, licence signée | **livré** |
-| C2 — Vendre | offres, abonnements par entité, cascade et prorata contraint, renouvellement | à venir |
+| **C2 — Vendre** | offres, abonnements par entité, cascade et prorata contraint, renouvellement | **livré** |
 | C3 — Encaisser | factures, paiements partiels, référence unique, rappel de l'installation | à venir |
 | C4 — La vitrine | site commercial, réglages, tableau de bord, demandes de contact | à venir |
 | P1 — Côté produit | activation, synchronisation, licence vérifiée, barrière `module:` par entité | à venir (dépôt du produit) |
@@ -177,3 +177,30 @@ Ce qui a été corrigé par rapport à l'ancienne console, et que les tests verr
 Lot C2 qui les remplit, et la barrière `module:` du produit (P1) qui les lira.
 
 **46 tests.**
+
+### Le Lot C2, en détail
+
+| Écran / route | Ce qu'il fait |
+|---|---|
+| `console.offres.index` | le catalogue commercial : licences (annuelles, grille de taille, plafond d'accès) et accès (mensuels) ; modules cochés espace par espace, ou « tous, futurs compris » |
+| `console.clients.show` | chaque entité de l'arbre montre son abonnement ; « Vendre » ouvre l'aperçu (période, prix, prorata) calculé par le serveur ; l'historique et la résiliation |
+
+`App\Metier\Commerce\Ventes` est le **seul écrivain** des abonnements ; `Offres`, des offres.
+Ce qu'ils tiennent, et que les tests verrouillent :
+
+- **Un abonnement par ENTITÉ** (index unique), et des **périodes** qui ne se modifient pas, prix
+  FIGÉ dedans : changer le prix d'une offre ne change pas ce qui a été vendu. Pas de colonne
+  `statut` — l'état se lit sur les périodes et `resilie_le`.
+- **Un seul geste pour vendre, renouveler et reprendre** : la date proposée est le lendemain de la
+  dernière période ; une période qui chevauche est refusée, une antidate de plus d'un mois aussi.
+- **La cascade** : pas d'accès sans licence en cours à sa date de début, pas d'accès au-dessus du
+  plafond de la licence. **Le prorata est contraint** : l'accès est coupé à la fin de la licence et
+  son prix réduit au jour près (l'ancienne console l'annonçait sans l'appliquer).
+- **La survie est tenue deux fois** : à la vente, et dans `EtatLicence`, qui ne sert plus aucun
+  accès quand la licence est résiliée ou expirée.
+- **La licence parle par entité** (`entites` : offre, palier, fin, modules) — c'est ce que la
+  barrière `module:` du produit lira (P1). Un module non vendable vient avec l'espace ; un accès
+  d'église ouvre aussi l'espace de ses départements.
+- **Pas de quotas** : l'ancienne en vendait que le produit n'appliquait pas.
+
+**63 tests.**

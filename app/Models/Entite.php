@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -51,6 +52,12 @@ class Entite extends Model
     public function installation(): BelongsTo
     {
         return $this->belongsTo(Installation::class);
+    }
+
+    /** @return HasOne<Abonnement, $this> */
+    public function abonnement(): HasOne
+    {
+        return $this->hasOne(Abonnement::class);
     }
 
     /** « EXTENSION:44 » — la désignation que la licence et le produit partagent. */

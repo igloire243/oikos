@@ -90,6 +90,12 @@ class Installation extends Model
         return $this->hasMany(Entite::class);
     }
 
+    /** @return HasMany<Abonnement, $this> */
+    public function abonnements(): HasMany
+    {
+        return $this->hasMany(Abonnement::class);
+    }
+
     /** @return HasMany<CleActivation, $this> */
     public function clesActivation(): HasMany
     {

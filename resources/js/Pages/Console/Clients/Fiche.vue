@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import {
     AlertTriangle,
@@ -12,6 +12,7 @@ import {
     Plus,
     Power,
     Server,
+    ShoppingCart,
 } from 'lucide-vue-next';
 import LayoutConsole from '@/Layouts/LayoutConsole.vue';
 import EnTetePage from '@/Composants/EnTetePage.vue';
@@ -20,6 +21,9 @@ import Badge from '@/Composants/Badge.vue';
 import Modale from '@/Composants/Modale.vue';
 import ChampTexte from '@/Composants/ChampTexte.vue';
 import ChampZoneTexte from '@/Composants/ChampZoneTexte.vue';
+import ChampSelect from '@/Composants/ChampSelect.vue';
+import LigneEntite from '@/Composants/Console/LigneEntite.vue';
+import http from '@/http.js';
 
 /**
  * LA FICHE D'UN CLIENT — ses installations, ce qu'elles remontent, et leurs clés d'activation.
@@ -31,6 +35,7 @@ const props = defineProps({
     client: Object,
     installations: Array,
     cle_emise: Object,
+    offres_en_vente: Object,
 });
 
 const TONS = { ACTIVE: 'succes', MUETTE: 'alerte', DESACTIVEE: 'ardoise', JAMAIS_ACTIVEE: 'info' };
@@ -113,6 +118,79 @@ const copier = async (code) => {
         // sélectionnable à la main.
     }
 };
+
+/* --- Vendre ------------------------------------------------------------------------------ */
+
+/**
+ * L'APERÇU VIENT DU SERVEUR, jamais d'un calcul ici : la grille de taille d'une licence, la cascade
+ * et le prorata vivent dans `App\Metier\Commerce\Ventes`, et un prix recalculé à l'écran finirait
+ * par différer de celui qui serait écrit.
+ */
+const venteOuverte = ref(null);
+const formVente = useForm({ offre_id: null, devise: 'USD', debut: '' });
+const apercu = ref(null);
+const DEVISES = [
+    { valeur: 'USD', libelle: 'Dollars (USD)' },
+    { valeur: 'CDF', libelle: 'Francs congolais (CDF)' },
+];
+const offresProposees = computed(() =>
+    venteOuverte.value ? (props.offres_en_vente?.[venteOuverte.value.type] ?? []) : []
+);
+
+const ouvrirVente = (entite) => {
+    venteOuverte.value = entite;
+    formVente.clearErrors();
+    formVente.offre_id = offresProposees.value[0]?.valeur ?? null;
+    formVente.devise = 'USD';
+    formVente.debut = '';
+    rafraichirApercu();
+};
+
+let demande = 0;
+const rafraichirApercu = async () => {
+    if (!venteOuverte.value || !formVente.offre_id) {
+        apercu.value = null;
+        return;
+    }
+    const numero = ++demande;
+    try {
+        const { data } = await http.get(route('console.ventes.apercu', venteOuverte.value.id), {
+            params: {
+                offre_id: formVente.offre_id,
+                devise: formVente.devise,
+                debut: formVente.debut || undefined,
+            },
+        });
+        // Une réponse plus ancienne qui arriverait après une plus récente ne l'écrase pas.
+        if (numero !== demande) return;
+        apercu.value = data;
+        if (!formVente.debut) formVente.debut = data.debut;
+    } catch {
+        if (numero === demande) apercu.value = null;
+    }
+};
+watch(() => [formVente.offre_id, formVente.devise, formVente.debut], rafraichirApercu);
+
+const vendre = () =>
+    formVente.post(route('console.ventes.store', venteOuverte.value.id), {
+        preserveScroll: true,
+        onSuccess: () => (venteOuverte.value = null),
+    });
+
+/* --- L'historique et la résiliation ------------------------------------------------------ */
+
+const historique = ref(null);
+const formResiliation = useForm({ motif: '' });
+const resiliationOuverte = ref(false);
+const resilier = () =>
+    formResiliation.patch(route('console.abonnements.resilier', historique.value.abonnement.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            resiliationOuverte.value = false;
+            historique.value = null;
+            formResiliation.reset();
+        },
+    });
 
 const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boolean).join(', '));
 </script>
@@ -293,30 +371,22 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                     </p>
                     <ul v-else class="mt-2 space-y-2">
                         <li v-for="noeud in installation.arbre" :key="noeud.reference ?? 'autres'">
-                            <p class="flex min-w-0 items-center gap-2 text-sm">
-                                <Badge :ton="noeud.type === 'VISION' ? 'marque' : 'info'">{{
-                                    noeud.libelle_type
-                                }}</Badge>
-                                <span class="truncate font-medium text-slate-800">{{
-                                    noeud.nom
-                                }}</span>
-                            </p>
+                            <LigneEntite
+                                :entite="noeud"
+                                @vendre="ouvrirVente"
+                                @historique="historique = $event"
+                            />
                             <ul
                                 v-if="noeud.enfants.length"
                                 class="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-3"
                             >
-                                <li
-                                    v-for="enfant in noeud.enfants"
-                                    :key="enfant.reference"
-                                    class="flex min-w-0 items-center gap-2 text-sm"
-                                >
-                                    <span class="truncate text-slate-700">{{ enfant.nom }}</span>
-                                    <span class="shrink-0 text-xs text-slate-400"
-                                        >{{ enfant.libelle_type
-                                        }}<template v-if="enfant.effectif !== null">
-                                            · {{ enfant.effectif }} membres</template
-                                        ></span
-                                    >
+                                <li v-for="enfant in noeud.enfants" :key="enfant.reference">
+                                    <LigneEntite
+                                        :entite="enfant"
+                                        enfant
+                                        @vendre="ouvrirVente"
+                                        @historique="historique = $event"
+                                    />
                                 </li>
                             </ul>
                         </li>
@@ -443,6 +513,151 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                 <Bouton variante="contour" @click="cleOuverte = null">Annuler</Bouton>
                 <Bouton :desactive="formCle.processing" :icone="KeyRound" @click="emettre"
                     >Émettre</Bouton
+                >
+            </template>
+        </Modale>
+        <Modale
+            :ouverte="!!venteOuverte"
+            titre="Vendre une période"
+            :sous-titre="venteOuverte?.nom"
+            @fermer="venteOuverte = null"
+        >
+            <div class="space-y-4">
+                <p v-if="!offresProposees.length" class="text-sm text-slate-500">
+                    Aucune offre en vente pour ce niveau. Créez-en une depuis l'écran Offres.
+                </p>
+                <template v-else>
+                    <ChampSelect
+                        v-model="formVente.offre_id"
+                        label="L'offre"
+                        :options="offresProposees"
+                        :erreur="formVente.errors.offre_id"
+                        obligatoire
+                    />
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <ChampSelect
+                            v-model="formVente.devise"
+                            label="Devise"
+                            :options="DEVISES"
+                            :erreur="formVente.errors.devise"
+                        />
+                        <ChampTexte
+                            v-model="formVente.debut"
+                            label="À partir du"
+                            type="date"
+                            :erreur="formVente.errors.debut"
+                        />
+                    </div>
+
+                    <div
+                        v-if="apercu?.empechement"
+                        class="flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
+                    >
+                        <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0" />
+                        <p>{{ apercu.empechement }}</p>
+                    </div>
+                    <div
+                        v-else-if="apercu"
+                        class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm"
+                    >
+                        <p class="text-slate-600">
+                            Du <strong class="text-slate-800">{{ apercu.debut_libelle }}</strong> au
+                            <strong class="text-slate-800">{{ apercu.fin_libelle }}</strong>
+                        </p>
+                        <p class="mt-1 text-2xl font-bold text-slate-900">{{ apercu.montant }}</p>
+                        <p v-if="apercu.au_prorata" class="mt-2 text-xs text-amber-700">
+                            Au prorata : la licence de la Vision s'arrête le
+                            {{ apercu.licence_fin_libelle }}, et un accès ne lui survit pas. Plein
+                            tarif : {{ apercu.plein }}.
+                        </p>
+                        <p
+                            v-if="apercu.taille && venteOuverte?.type === 'VISION'"
+                            class="mt-2 text-xs text-slate-500"
+                        >
+                            Tarif d'un réseau de {{ apercu.taille }} antennes et églises.
+                        </p>
+                    </div>
+                </template>
+            </div>
+            <template #actions>
+                <Bouton variante="contour" @click="venteOuverte = null">Annuler</Bouton>
+                <Bouton
+                    :desactive="formVente.processing || !apercu || !!apercu.empechement"
+                    :icone="ShoppingCart"
+                    @click="vendre"
+                    >Vendre</Bouton
+                >
+            </template>
+        </Modale>
+
+        <Modale
+            :ouverte="!!historique"
+            :titre="historique?.nom"
+            sous-titre="Les périodes vendues"
+            @fermer="historique = null"
+        >
+            <div v-if="historique?.abonnement" class="space-y-3">
+                <p
+                    v-if="historique.abonnement.motif_resiliation"
+                    class="rounded-xl bg-slate-50 p-3 text-sm text-slate-600"
+                >
+                    Résilié — {{ historique.abonnement.motif_resiliation }}
+                </p>
+                <ul class="divide-y divide-slate-100">
+                    <li
+                        v-for="periode in historique.abonnement.periodes"
+                        :key="periode.id"
+                        class="flex flex-wrap items-baseline justify-between gap-x-3 py-2 text-sm"
+                    >
+                        <span class="min-w-0 text-slate-800">{{ periode.offre }}</span>
+                        <span class="font-semibold text-slate-900">{{ periode.montant }}</span>
+                        <span class="w-full text-xs text-slate-500"
+                            >du {{ periode.du }} au {{ periode.au
+                            }}<template v-if="periode.au_prorata"> · au prorata</template></span
+                        >
+                    </li>
+                </ul>
+            </div>
+            <template #actions>
+                <Bouton
+                    v-if="historique?.abonnement && historique.abonnement.etat !== 'RESILIE'"
+                    variante="contour"
+                    @click="resiliationOuverte = true"
+                    >Résilier</Bouton
+                >
+                <Bouton :icone="ShoppingCart" @click="ouvrirVente(historique)"
+                    >Vendre une période</Bouton
+                >
+            </template>
+        </Modale>
+
+        <Modale
+            :ouverte="resiliationOuverte"
+            titre="Résilier l'abonnement"
+            :sous-titre="historique?.nom"
+            @fermer="resiliationOuverte = false"
+        >
+            <p class="text-sm text-slate-600">
+                L'entité perd ses modules dès la prochaine synchronisation. Les périodes vendues
+                restent dans l'historique.
+                <strong v-if="historique?.type === 'VISION'" class="text-rose-700"
+                    >C'est la licence : tous les accès de l'installation s'arrêtent avec
+                    elle.</strong
+                >
+            </p>
+            <div class="mt-4">
+                <ChampTexte
+                    v-model="formResiliation.motif"
+                    label="Motif"
+                    placeholder="L'église a fermé ; à la demande du client…"
+                    :erreur="formResiliation.errors.motif"
+                    obligatoire
+                />
+            </div>
+            <template #actions>
+                <Bouton variante="contour" @click="resiliationOuverte = false">Annuler</Bouton>
+                <Bouton variante="danger" :desactive="formResiliation.processing" @click="resilier"
+                    >Résilier</Bouton
                 >
             </template>
         </Modale>
