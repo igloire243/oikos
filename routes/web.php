@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbonnementsController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\ClientsController;
+use App\Http\Controllers\FacturesController;
 use App\Http\Controllers\InstallationsController;
 use App\Http\Controllers\OffresController;
 use App\Http\Controllers\PushController;
@@ -60,6 +61,13 @@ Route::prefix('console')->group(function () {
                 Route::patch('/{offre}/retrait', [OffresController::class, 'retirer'])->name('retirer');
                 Route::patch('/{offre}/retablissement', [OffresController::class, 'retablir'])->name('retablir');
             });
+
+            Route::prefix('factures')->name('factures.')->group(function () {
+                Route::get('/', [FacturesController::class, 'index'])->name('index');
+                Route::post('/{facture}/paiements', [FacturesController::class, 'encaisser'])->name('encaisser');
+            });
+            Route::patch('/paiements/{paiement}/non-recu', [FacturesController::class, 'nonRecu'])->name('paiements.non_recu');
+            Route::patch('/paiements/{paiement}/retablissement', [FacturesController::class, 'retablir'])->name('paiements.retablir');
 
             // Vendre se fait sur une ENTITÉ, jamais sur un client en bloc.
             Route::get('/entites/{entite}/vente', [AbonnementsController::class, 'apercu'])->name('ventes.apercu');

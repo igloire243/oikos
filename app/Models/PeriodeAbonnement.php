@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,6 +40,12 @@ class PeriodeAbonnement extends Model
         'montant_centimes' => 'integer',
         'au_prorata' => 'boolean',
     ];
+
+    /** @return HasOne<Facture, $this> */
+    public function facture(): HasOne
+    {
+        return $this->hasOne(Facture::class, 'periode_abonnement_id');
+    }
 
     /** @return BelongsTo<Offre, $this> */
     public function offre(): BelongsTo

@@ -253,3 +253,14 @@ dans la session distante ; les paquets du produit ont été copiés dans `vendor
 **Vendables depuis la demande de l'utilisateur** : `vision.evenements` et `vision.commissions`
 (65 modules / 58 vendables). L'offre Vision Standard les porte, comme `antenne.inventaire` et
 `extension.inventaire` dans les offres Standard des étages du dessous.
+
+**Le lot C3 est livré — factures et encaissements.** `console.factures.index` : une carte par
+facture (mobile d'abord), filtres En attente / Partielles / En retard / Soldées, recherche par numéro,
+client ou église, « reste à recevoir » par devise (jamais un total entre devises). Encaisser (montant
+tapé « 12,50 », moyen, référence unique, date, note), marquer un versement « non reçu » avec son motif
+et le rétablir : `Facturation` reste le seul écrivain, le contrôleur ne traduit que le formulaire.
+L'historique d'un client montre, sous chaque période, le numéro et l'état de sa facture.
+`FacturationTest` couvre la facture émise à la vente, partielle puis soldée, le trop-perçu refusé, la
+référence unique, non reçu/rétabli, le rappel qui ne fait jamais échouer l'encaissement et la
+numérotation par année. *Reste à faire côté console* : les demandes de contact, les réglages et le
+journal (C4), le paiement en ligne (C5).

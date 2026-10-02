@@ -615,6 +615,21 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                             >du {{ periode.du }} au {{ periode.au
                             }}<template v-if="periode.au_prorata"> · au prorata</template></span
                         >
+                        <span v-if="periode.facture" class="w-full text-xs">
+                            <span class="font-mono text-slate-500">{{ periode.facture.numero }}</span> ·
+                            <span
+                                :class="
+                                    periode.facture.etat === 'SOLDEE'
+                                        ? 'font-semibold text-emerald-700'
+                                        : periode.facture.libelle === 'En retard'
+                                          ? 'font-semibold text-rose-600'
+                                          : 'text-amber-700'
+                                "
+                                >{{ periode.facture.libelle }}</span
+                            ><template v-if="periode.facture.etat !== 'SOLDEE'">
+                                · reste {{ periode.facture.restant }}</template
+                            >
+                        </span>
                     </li>
                 </ul>
             </div>

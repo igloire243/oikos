@@ -9,6 +9,7 @@ use App\Models\Abonnement;
 use App\Models\CleActivation;
 use App\Models\Client;
 use App\Models\Entite;
+use App\Models\Facture;
 use App\Models\Installation;
 use App\Models\Offre;
 use App\Models\PeriodeAbonnement;
@@ -71,7 +72,7 @@ class ClientsController extends Controller
 
     public function show(Request $requete, Client $client): Response
     {
-        $client->load(['installations.entites.abonnement.periodes.offre', 'installations.clesActivation.emisePar']);
+        $client->load(['installations.entites.abonnement.periodes.offre', 'installations.entites.abonnement.periodes.facture.paiements', 'installations.clesActivation.emisePar']);
 
         return Inertia::render('Console/Clients/Fiche', [
             'client' => [
@@ -211,6 +212,14 @@ class ClientsController extends Controller
                 'au' => $p->fin->translatedFormat('j M Y'),
                 'montant' => Montant::formater($p->montant_centimes, $p->devise),
                 'au_prorata' => $p->au_prorata,
+                // Le numéro et l'état de la facture de cette période : « a-t-il payé ? » se lit
+                // ici, sans ouvrir l'écran des factures.
+                'facture' => $p->facture === null ? null : [
+                    'numero' => $p->facture->numero,
+                    'etat' => $p->facture->etat(),
+                    'libelle' => $p->facture->enRetard() ? 'En retard' : Facture::ETATS[$p->facture->etat()],
+                    'restant' => Montant::formater($p->facture->restantCentimes(), $p->facture->devise),
+                ],
             ]),
         ];
     }

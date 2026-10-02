@@ -52,5 +52,7 @@ it('ouvre l\'accueil et le catalogue à un opérateur, avec le menu partagé', f
             ->has('espaces', 4)
             ->where('menu.1.entrees.0.route', 'console.clients.index')
             ->where('menu.1.entrees.1.route', 'console.offres.index')
-            ->where('menu.1.entrees.2.route', null));
+            ->where('menu.1.entrees.2.route', 'console.factures.index')
+            // « Demandes de contact » n'a pas encore d'écran (lot C4).
+            ->where('menu.1.entrees.3.route', null));
 });
