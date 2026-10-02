@@ -1,27 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2BDC6E"/>
-      <stop offset="0.5" stop-color="#128C7E"/>
-      <stop offset="1" stop-color="#064E46"/>
+      <stop offset="0" stop-color="#25D366"/>
+      <stop offset="0.55" stop-color="#128C7E"/>
+      <stop offset="1" stop-color="#075E54"/>
     </linearGradient>
-    <radialGradient id="lumiere" cx="0.2" cy="0.12" r="0.75">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.34"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="ombre" x="-20%" y="-20%" width="140%" height="150%">
-      <feGaussianBlur stdDeviation="9"/>
-    </filter>
-    <!-- La serrure est un TROU dans la maison (noir = retiré), pas un dessin posé dessus : le fond
-         dégradé la traverse. -->
-    <mask id="trou" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
-      <rect width="512" height="512" fill="#fff"/>
-      <circle cx="256" cy="290" r="31" fill="#000"/>
-      <path d="M239 302 H273 L287 372 H225 Z" fill="#000"/>
-    </mask>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#fond)"/>
-  <rect width="512" height="512" rx="112" fill="url(#lumiere)"/>
-  <g transform="translate(0 14)" filter="url(#ombre)" opacity="0.38"><g mask="url(#trou)" fill="#021f1b" stroke="#021f1b"><path d="M256 108 L412 240 H372 V396 H140 V240 H100 Z" stroke-width="12" stroke-linejoin="round"/></g></g>
-  <g mask="url(#trou)" fill="#ffffff" stroke="#ffffff"><path d="M256 108 L412 240 H372 V396 H140 V240 H100 Z" stroke-width="12" stroke-linejoin="round"/></g>
+  <path d="M256 124 L396 244 H358 V380 H290 V292 H222 V380 H154 V244 H116 Z" fill="#fff" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
 </svg>
