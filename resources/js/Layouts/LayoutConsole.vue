@@ -241,16 +241,22 @@ const basculerPush = async () => {
                             </button>
                         </div>
                     </div>
+                    <!-- Balise <a> nue et adresse RELATIVE, pas <Link> ni route() : le site public est une autre mise en
+                         page, et une navigation Inertia gardait l'état de celle de la console (classes de <html>, variables
+                         de couleur) — d'où une présentation cassée. Un chargement complet repart d'une page propre, et
+                         une adresse relative reste sur l'origine courante : une adresse absolue bâtie sur APP_URL
+                         (127.0.0.1) sortait de l'application installée depuis l'IP du réseau, et iOS affichait alors les
+                         boutons de Safari. -->
                     <!-- Le site public : un opérateur y va pour voir ce que voit un visiteur — les tarifs, le
                          formulaire de demande. -->
-                    <Link
-                        :href="route('vitrine.accueil')"
+                    <a
+                        href="/"
                         class="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
                         title="Voir le site public"
                     >
                         <Globe class="h-5 w-5" />
                         <span class="hidden sm:inline">Site public</span>
-                    </Link>
+                    </a>
                     <button
                         v-if="peutInstaller"
                         type="button"
