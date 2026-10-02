@@ -52,9 +52,14 @@ class EtatLicence
             ->get();
 
         $licence = $abonnements->first(fn (Abonnement $a) => $a->entite->type === Entite::VISION);
+        // Une licence résiliée AVANT la remise à l'essai ne compte plus : sans cela, une installation
+        // remise à l'essai répondrait EXPIRÉ au lieu d'ouvrir le produit entier.
         $licenceVendue = $installation->abonnements()
             ->whereHas('entite', fn ($q) => $q->where('type', Entite::VISION))
             ->whereHas('periodes')
+            ->when($installation->essai_relance_le !== null, fn ($q) => $q->where(
+                fn ($q) => $q->whereNull('resilie_le')->orWhere('resilie_le', '>', $installation->essai_relance_le)
+            ))
             ->exists();
 
         [$statut, $fin, $offre] = self::statut($installation, $licence, $licenceVendue, $aujourdhui, $grace);
@@ -138,7 +143,9 @@ class EtatLicence
             }
         }
 
-        $finEssai = ($installation->activee_le ?? $aujourdhui)->copy()->addDays(Reglages::valeur('essai_jours'))->startOfDay();
+        // L'essai part de la dernière remise à l'essai, à défaut de la première activation.
+        $debutEssai = collect([$installation->activee_le, $installation->essai_relance_le])->filter()->max() ?? $aujourdhui;
+        $finEssai = $debutEssai->copy()->addDays(Reglages::valeur('essai_jours'))->startOfDay();
 
         if (! $licenceVendue && $aujourdhui->lte($finEssai)) {
             return [self::ESSAI, $finEssai->toDateString(), null];

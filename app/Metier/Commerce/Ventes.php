@@ -152,6 +152,77 @@ class Ventes
     }
 
     /**
+     * Fait COMMENCER AUJOURD'HUI une période déjà vendue pour plus tard — la formule plus haute
+     * vendue en renouvellement ne doit pas attendre l'échéance de celle qu'elle remplace.
+     *
+     * La fin ne bouge pas : le temps total servi est le même, la formule plus haute court
+     * simplement pendant les jours qui restaient à l'ancienne. Rien n'est refacturé — la période
+     * suivante a déjà sa facture, et ce que l'ancienne avait vendu reste lisible dans
+     * `debut_vendu` / `fin_vendue`. Un ajustement d'argent éventuel est un geste commercial, pas
+     * un calcul caché ici.
+     *
+     * Les seuls cas pris en charge sont ceux qu'on peut dire en une phrase : la période suivante
+     * suit directement celle en cours, aucune autre ne s'intercale, et la période en cours ne
+     * commence pas aujourd'hui (il n'en resterait aucun jour).
+     */
+    public static function appliquerMaintenant(PeriodeAbonnement $periode, ?User $par): PeriodeAbonnement
+    {
+        $aujourdhui = Carbon::today();
+
+        $periode = DB::transaction(function () use ($periode, $aujourdhui, $par) {
+            $abonnement = Abonnement::query()->lockForUpdate()->findOrFail($periode->abonnement_id);
+            $periode = PeriodeAbonnement::query()->lockForUpdate()->findOrFail($periode->id);
+
+            if ($abonnement->estResilie()) {
+                throw ValidationException::withMessages(['periode' => 'Cet abonnement est résilié.']);
+            }
+            if ($periode->debut->lte($aujourdhui)) {
+                throw ValidationException::withMessages(['periode' => 'Cette période a déjà commencé : rien à avancer.']);
+            }
+
+            $en_cours = $abonnement->periodes()->whereDate('debut', '<=', $aujourdhui)->whereDate('fin', '>=', $aujourdhui)->first();
+
+            if ($abonnement->periodes()->where('id', '!=', $periode->id)->whereDate('debut', '>', $aujourdhui)->whereDate('debut', '<', $periode->debut)->exists()) {
+                throw ValidationException::withMessages(['periode' => 'Une autre période est vendue avant celle-ci : avancez d\'abord la plus proche.']);
+            }
+            if ($en_cours !== null && ! $en_cours->fin->copy()->addDay()->equalTo($periode->debut)) {
+                throw ValidationException::withMessages(['periode' => 'Un trou sépare la période en cours de celle-ci : on ne devine pas qui couvre ces jours.']);
+            }
+            if ($en_cours !== null && $en_cours->debut->gte($aujourdhui)) {
+                throw ValidationException::withMessages(['periode' => 'La période en cours commence aujourd\'hui : il n\'en resterait aucun jour. Appliquez demain.']);
+            }
+
+            $ancienDebut = $periode->debut->copy();
+
+            if ($en_cours !== null) {
+                $en_cours->forceFill([
+                    'fin_vendue' => $en_cours->fin_vendue ?? $en_cours->fin,
+                    'fin' => $aujourdhui->copy()->subDay(),
+                ])->save();
+            }
+
+            $periode->forceFill([
+                'debut_vendu' => $periode->debut_vendu ?? $ancienDebut,
+                'debut' => $aujourdhui,
+            ])->save();
+
+            Journal::tracer('ABONNEMENT_AVANCE', $abonnement, '« '.$periode->offre->nom.' » appliquée dès aujourd\'hui à « '.$abonnement->entite->nom.' »'
+                .($en_cours ? ', à la place de « '.$en_cours->offre->nom.' »' : ''), [
+                    'entite' => $abonnement->entite->reference(),
+                    'offre' => $periode->offre->code,
+                    'debut_vendu' => $ancienDebut->toDateString(),
+                    'remplace' => $en_cours?->offre->code,
+                ], $par);
+
+            return $periode;
+        });
+
+        Rappel::prevenir($periode->abonnement->installation);
+
+        return $periode;
+    }
+
+    /**
      * Résilie, sans rien effacer : les périodes vendues restent l'historique de ce qui a été
      * facturé. Résilier une LICENCE coupe aussi les accès de l'installation — non pas en les
      * réécrivant, mais parce que `EtatLicence` ne les sert plus sans elle.

@@ -112,6 +112,7 @@ class ClientsController extends Controller
             'version' => $installation->version,
             'empreinte' => $installation->empreinte ? substr($installation->empreinte, 0, 12).'…' : null,
             'activee_le' => $installation->activee_le?->translatedFormat('j F Y'),
+            'essai_relance_le' => $installation->essai_relance_le?->translatedFormat('j F Y'),
             'vue_le' => $installation->vue_le?->diffForHumans(),
             'rappel_possible' => $installation->url !== null && $installation->rappel_jeton !== null,
             'rappel_le' => $installation->rappel_le?->diffForHumans(),
@@ -219,6 +220,10 @@ class ClientsController extends Controller
                 'au' => $p->fin->translatedFormat('j M Y'),
                 'montant' => Montant::formater($p->montant_centimes, $p->devise),
                 'au_prorata' => $p->au_prorata,
+                // Une période vendue pour plus tard peut commencer aujourd'hui (Ventes::appliquerMaintenant).
+                'peut_avancer' => $etat !== Abonnement::RESILIE && $p->debut->isFuture(),
+                'avancee_depuis' => $p->debut_vendu?->translatedFormat('j M Y'),
+                'raccourcie_depuis' => $p->fin_vendue?->translatedFormat('j M Y'),
                 // Le numéro et l'état de la facture de cette période : « a-t-il payé ? » se lit
                 // ici, sans ouvrir l'écran des factures.
                 'facture' => $p->facture === null ? null : [

@@ -7,6 +7,7 @@ use App\Metier\Commerce\Ventes;
 use App\Models\Abonnement;
 use App\Models\Entite;
 use App\Models\Offre;
+use App\Models\PeriodeAbonnement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,9 +42,22 @@ class AbonnementsController extends Controller
 
         $periode = Ventes::vendre($entite, $offre, $devise, $debut, $requete->user());
 
+        // « Dès maintenant » : la période vendue pour plus tard commence aujourd'hui. Deux gestes
+        // distincts côté règle (vendre, puis avancer) — la vente garde ses contrôles, l'avance les siens.
+        if ($requete->boolean('maintenant') && $periode->debut->isFuture()) {
+            $periode = Ventes::appliquerMaintenant($periode, $requete->user());
+        }
+
         return back()->with('succes', '« '.$offre->nom.' » vendue à « '.$entite->nom.' » jusqu\'au '
             .$periode->fin->translatedFormat('j F Y').' — '.Montant::formater($periode->montant_centimes, $devise)
             .($periode->au_prorata ? ', au prorata de la licence.' : '.'));
+    }
+
+    public function appliquerMaintenant(Request $requete, PeriodeAbonnement $periode): RedirectResponse
+    {
+        $periode = Ventes::appliquerMaintenant($periode, $requete->user());
+
+        return back()->with('succes', '« '.$periode->offre->nom.' » s\'applique dès aujourd\'hui, jusqu\'au '.$periode->fin->translatedFormat('j F Y').'.');
     }
 
     public function resilier(Request $requete, Abonnement $abonnement): RedirectResponse

@@ -52,6 +52,15 @@ class InstallationsController extends Controller
             : 'Installation réactivée.');
     }
 
+    public function remettreALEssai(Request $requete, Installation $installation): RedirectResponse
+    {
+        $donnees = $requete->validate(['motif' => ['required', 'string', 'min:3', 'max:255']]);
+
+        Installations::remettreALEssai($installation, $donnees['motif'], $requete->user());
+
+        return back()->with('succes', 'Installation remise à l\'essai : tout est ouvert dès sa prochaine synchronisation, pour la durée d\'essai des réglages.');
+    }
+
     public function emettreCle(Request $requete, Installation $installation): RedirectResponse
     {
         $donnees = $requete->validate(['note' => ['nullable', 'string', 'max:190']]);

@@ -73,6 +73,7 @@ Route::prefix('console')->group(function () {
                 Route::put('/{installation}', [InstallationsController::class, 'update'])->name('update');
                 Route::patch('/{installation}/activation', [InstallationsController::class, 'activation'])->name('activation');
                 Route::post('/{installation}/cles', [InstallationsController::class, 'emettreCle'])->name('cles.store');
+                Route::patch('/{installation}/remise-a-lessai', [InstallationsController::class, 'remettreALEssai'])->name('essai');
                 Route::post('/{installation}/rappel', [InstallationsController::class, 'rappeler'])->name('rappel');
             });
             Route::patch('/cles/{cle}/revocation', [InstallationsController::class, 'revoquerCle'])->name('cles.revoquer');
@@ -103,6 +104,7 @@ Route::prefix('console')->group(function () {
             // Vendre se fait sur une ENTITÉ, jamais sur un client en bloc.
             Route::get('/entites/{entite}/vente', [AbonnementsController::class, 'apercu'])->name('ventes.apercu');
             Route::post('/entites/{entite}/vente', [AbonnementsController::class, 'store'])->name('ventes.store');
+            Route::patch('/periodes/{periode}/maintenant', [AbonnementsController::class, 'appliquerMaintenant'])->name('periodes.maintenant');
             Route::patch('/abonnements/{abonnement}/resiliation', [AbonnementsController::class, 'resilier'])->name('abonnements.resilier');
         });
 });

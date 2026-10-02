@@ -387,3 +387,14 @@ si un code déjà livré le LIT** (la table `Reglages::AUTRES` dit lequel, colon
   (prop partagée `editeur`).
 
 **139 tests.**
+
+**Faire évoluer une offre en cours, et remettre une installation à l'essai.**
+Une formule plus haute vendue en renouvellement attendait l'échéance de la précédente. `Ventes::appliquerMaintenant()`
+(bouton « Appliquer dès aujourd'hui » dans l'historique d'une entité, ou case à cocher à la vente) fait commencer
+la période aujourd'hui et raccourcit celle qu'elle remplace ; **la fin ne bouge pas** (le temps servi est le même,
+la formule plus haute court pendant les jours qui restaient) et **rien n'est refacturé**. Les deux seules dates qu'on
+réécrit gardent ce qui avait été vendu (`debut_vendu`, `fin_vendue`), tracé `ABONNEMENT_AVANCE`. Refusé si la
+période a déjà commencé, si un trou ou une autre période s'intercale, ou si celle en cours commence aujourd'hui.
+`Installations::remettreALEssai()` (bouton « Remettre à l'essai », motif obligatoire) résilie les abonnements en cours
+— jamais effacés, une facture non soldée reste due — et pose `installations.essai_relance_le` : `EtatLicence` compte
+l'essai depuis cette date et ignore une licence résiliée jusqu'à elle ; une licence vendue ensuite reprend la main.

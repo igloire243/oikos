@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * UNE PÉRIODE VENDUE — une offre, deux dates, un prix figé.
  *
- * Elle ne se modifie pas : changer d'offre se fait au renouvellement, par une nouvelle période. La
+ * Elle ne se modifie pas, sauf par `Ventes::appliquerMaintenant()` — qui garde ce qui avait été vendu dans `debut_vendu` / `fin_vendue`. Changer d'offre se fait par une nouvelle période. La
  * facture du lot C3 s'y rattachera, et une facture ne doit jamais dire autre chose que la période
  * qu'elle facture.
  *
@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property int $montant_centimes
  * @property string $devise
  * @property bool $au_prorata
+ * @property Carbon|null $debut_vendu
+ * @property Carbon|null $fin_vendue
  * @property int|null $vendue_par_id
  * @property-read Offre $offre
  * @property-read Abonnement $abonnement
@@ -31,12 +33,14 @@ class PeriodeAbonnement extends Model
     protected $table = 'periodes_abonnement';
 
     /** @var list<string> */
-    protected $fillable = ['abonnement_id', 'offre_id', 'debut', 'fin', 'montant_centimes', 'devise', 'au_prorata', 'vendue_par_id'];
+    protected $fillable = ['abonnement_id', 'offre_id', 'debut', 'fin', 'montant_centimes', 'devise', 'au_prorata', 'vendue_par_id', 'debut_vendu', 'fin_vendue'];
 
     /** @var array<string, string> */
     protected $casts = [
         'debut' => 'date',
         'fin' => 'date',
+        'debut_vendu' => 'date',
+        'fin_vendue' => 'date',
         'montant_centimes' => 'integer',
         'au_prorata' => 'boolean',
     ];

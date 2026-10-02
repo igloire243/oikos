@@ -11,6 +11,7 @@ import {
     Pencil,
     Plus,
     Power,
+    RotateCcw,
     Server,
     ShoppingCart,
 } from 'lucide-vue-next';
@@ -127,8 +128,9 @@ const copier = async (code) => {
  * par différer de celui qui serait écrit.
  */
 const venteOuverte = ref(null);
-const formVente = useForm({ offre_id: null, devise: 'USD', debut: '' });
+const formVente = useForm({ offre_id: null, devise: 'USD', debut: '', maintenant: false });
 const apercu = ref(null);
+const aujourdhui = new Date().toISOString().slice(0, 10);
 const DEVISES = [
     { valeur: 'USD', libelle: 'Dollars (USD)' },
     { valeur: 'CDF', libelle: 'Francs congolais (CDF)' },
@@ -143,6 +145,7 @@ const ouvrirVente = (entite) => {
     formVente.offre_id = offresProposees.value[0]?.valeur ?? null;
     formVente.devise = 'USD';
     formVente.debut = '';
+    formVente.maintenant = false;
     rafraichirApercu();
 };
 
@@ -189,6 +192,35 @@ const resilier = () =>
             resiliationOuverte.value = false;
             historique.value = null;
             formResiliation.reset();
+        },
+    });
+
+/* --- Appliquer maintenant une période vendue pour plus tard ------------------------------- */
+
+const erreurAvance = ref('');
+const avancer = (periode) => {
+    erreurAvance.value = '';
+    router.patch(
+        route('console.periodes.maintenant', periode.id),
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => (historique.value = null),
+            onError: (erreurs) => (erreurAvance.value = Object.values(erreurs)[0] ?? 'Impossible.'),
+        }
+    );
+};
+
+/* --- Remettre une installation à l'essai -------------------------------------------------- */
+
+const essaiOuvert = ref(null);
+const formEssai = useForm({ motif: '' });
+const remettreALEssai = () =>
+    formEssai.patch(route('console.installations.essai', essaiOuvert.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            essaiOuvert.value = null;
+            formEssai.reset();
         },
     });
 
@@ -361,6 +393,15 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                     >
                         {{ installation.etat === 'DESACTIVEE' ? 'Réactiver' : 'Désactiver' }}
                     </Bouton>
+                    <Bouton
+                        variante="discret"
+                        compact
+                        :icone="RotateCcw"
+                        :desactive="installation.etat === 'DESACTIVEE'"
+                        title="Tout ouvert, pour la durée d'essai — les abonnements en cours sont résiliés"
+                        @click="essaiOuvert = installation"
+                        >Remettre à l'essai</Bouton
+                    >
                 </div>
 
                 <!-- L'arbre qu'elle a remonté : c'est à ces entités qu'on vendra. -->
@@ -536,6 +577,17 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                         />
                     </div>
 
+                    <label
+                        v-if="apercu && !apercu.empechement && apercu.debut > aujourdhui"
+                        class="flex items-start gap-2 text-sm text-slate-700"
+                    >
+                        <input v-model="formVente.maintenant" type="checkbox" class="mt-1" />
+                        <span
+                            >Appliquer dès aujourd'hui : la période en cours est raccourcie, la
+                            nouvelle commence maintenant et garde sa date de fin.</span
+                        >
+                    </label>
+
                     <div
                         v-if="apercu?.empechement"
                         class="flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
@@ -584,6 +636,9 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
             @fermer="historique = null"
         >
             <div v-if="historique?.abonnement" class="space-y-3">
+                <p v-if="erreurAvance" class="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">
+                    {{ erreurAvance }}
+                </p>
                 <p
                     v-if="historique.abonnement.motif_resiliation"
                     class="rounded-xl bg-slate-50 p-3 text-sm text-slate-600"
@@ -600,10 +655,23 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                         <span class="font-semibold text-slate-900">{{ periode.montant }}</span>
                         <span class="w-full text-xs text-slate-500"
                             >du {{ periode.du }} au {{ periode.au
-                            }}<template v-if="periode.au_prorata"> · au prorata</template></span
+                            }}<template v-if="periode.au_prorata"> · au prorata</template
+                            ><template v-if="periode.avancee_depuis">
+                                · vendue à partir du {{ periode.avancee_depuis }}</template
+                            ><template v-if="periode.raccourcie_depuis">
+                                · vendue jusqu'au {{ periode.raccourcie_depuis }}</template
+                            ></span
                         >
+                        <span v-if="periode.peut_avancer" class="w-full pt-1">
+                            <Bouton variante="contour" compact @click="avancer(periode)"
+                                >Appliquer dès aujourd'hui</Bouton
+                            >
+                        </span>
                         <span v-if="periode.facture" class="w-full text-xs">
-                            <span class="font-mono text-slate-500">{{ periode.facture.numero }}</span> ·
+                            <span class="font-mono text-slate-500">{{
+                                periode.facture.numero
+                            }}</span>
+                            ·
                             <span
                                 :class="
                                     periode.facture.etat === 'SOLDEE'
@@ -629,6 +697,38 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                 >
                 <Bouton :icone="ShoppingCart" @click="ouvrirVente(historique)"
                     >Vendre une période</Bouton
+                >
+            </template>
+        </Modale>
+
+        <Modale
+            :ouverte="!!essaiOuvert"
+            titre="Remettre à l'essai"
+            :sous-titre="essaiOuvert?.libelle"
+            @fermer="essaiOuvert = null"
+        >
+            <p class="text-sm text-slate-600">
+                L'installation repasse à l'état d'une installation qui vient de s'activer : tous les
+                modules ouverts pour la durée d'essai des réglages, comptée à partir d'aujourd'hui.
+                Ses abonnements en cours sont résiliés (l'historique reste) ;
+                <strong class="text-rose-700"
+                    >une facture non soldée reste due, et une licence vendue ensuite reprend la
+                    main.</strong
+                >
+            </p>
+            <div class="mt-4">
+                <ChampTexte
+                    v-model="formEssai.motif"
+                    label="Motif"
+                    placeholder="Démonstration au pasteur ; test avant renouvellement…"
+                    :erreur="formEssai.errors.motif"
+                    obligatoire
+                />
+            </div>
+            <template #actions>
+                <Bouton variante="contour" @click="essaiOuvert = null">Annuler</Bouton>
+                <Bouton variante="danger" :desactive="formEssai.processing" @click="remettreALEssai"
+                    >Remettre à l'essai</Bouton
                 >
             </template>
         </Modale>

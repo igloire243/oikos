@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $catalogue_empreinte
  * @property array<string, int>|null $compteurs
  * @property Carbon|null $activee_le
+ * @property Carbon|null $essai_relance_le
  * @property Carbon|null $vue_le
  * @property Carbon|null $desactivee_le
  */
@@ -62,7 +63,7 @@ class Installation extends Model
     /** @var list<string> */
     protected $fillable = [
         'client_id', 'nom', 'url', 'empreinte', 'version', 'catalogue_empreinte', 'compteurs',
-        'activee_le', 'vue_le', 'desactivee_le',
+        'activee_le', 'essai_relance_le', 'vue_le', 'desactivee_le',
     ];
 
     /** @var list<string> */
@@ -74,6 +75,7 @@ class Installation extends Model
         'rappel_jeton' => 'encrypted',
         'rappel_le' => 'datetime',
         'activee_le' => 'datetime',
+        'essai_relance_le' => 'datetime',
         'vue_le' => 'datetime',
         'desactivee_le' => 'datetime',
     ];

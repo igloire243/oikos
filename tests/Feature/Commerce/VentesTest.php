@@ -1,12 +1,15 @@
 <?php
 
+use App\Metier\Clients\Installations;
 use App\Metier\Commerce\Ventes;
+use App\Metier\Console\Reglages;
 use App\Metier\Licence\EtatLicence;
 use App\Models\Abonnement;
 use App\Models\Entite;
 use App\Models\EntreeJournal;
 use App\Models\Installation;
 use App\Models\Offre;
+use App\Models\PeriodeAbonnement;
 use App\Models\User;
 use Database\Seeders\OffreSeeder;
 use Illuminate\Support\Carbon;
@@ -206,4 +209,54 @@ it('range les entités en dossiers : la Vision contient ses antennes, qui contie
                 && $arbre[0]['type'] === 'VISION'
                 && $arbre[0]['enfants'][0]['nom'] === 'Antenne Lualaba'
                 && $arbre[0]['enfants'][0]['enfants'][0]['nom'] === 'Béthel Kolwezi'));
+});
+
+it("applique dès aujourd'hui la formule plus haute vendue en renouvellement — sans refaire les prix", function () {
+    Carbon::setTestNow('2026-09-20 10:00:00');
+    Ventes::vendre($this->vision, uneOffre('LICENCE_VISION_STANDARD'), 'USD', null, null);
+    Carbon::setTestNow('2026-10-01 10:00:00');
+    $courante = Ventes::vendre($this->eglise, uneOffre('ACCES_EGLISE_STARTER'), 'USD', Carbon::parse('2026-09-25'), null);
+    $suivante = Ventes::vendre($this->eglise, uneOffre('ACCES_EGLISE_STANDARD'), 'USD', null, null);
+
+    $avancee = Ventes::appliquerMaintenant($suivante, null);
+
+    $courante->refresh();
+    expect($avancee->debut->toDateString())->toBe('2026-10-01')
+        ->and($avancee->fin->toDateString())->toBe($suivante->fin->toDateString())
+        ->and($avancee->debut_vendu->toDateString())->toBe('2026-10-25')
+        ->and($courante->fin->toDateString())->toBe('2026-09-30')
+        ->and($courante->fin_vendue->toDateString())->toBe('2026-10-24')
+        ->and($avancee->montant_centimes)->toBe($suivante->montant_centimes)
+        ->and(EntreeJournal::query()->where('action', 'ABONNEMENT_AVANCE')->count())->toBe(1);
+
+    $ligne = (array) EtatLicence::pour($this->installation->refresh())['entites'];
+    expect($ligne['EXTENSION:3']['offre'])->toBe('ACCES_EGLISE_STANDARD');
+});
+
+it("refuse d'avancer une période déjà commencée, ou quand la période en cours commence aujourd'hui", function () {
+    Ventes::vendre($this->vision, uneOffre('LICENCE_VISION_STANDARD'), 'USD', null, null);
+    $courante = Ventes::vendre($this->eglise, uneOffre('ACCES_EGLISE_STARTER'), 'USD', null, null);
+    $suivante = Ventes::vendre($this->eglise, uneOffre('ACCES_EGLISE_STANDARD'), 'USD', null, null);
+
+    expect(fn () => Ventes::appliquerMaintenant($courante, null))->toThrow(ValidationException::class, 'déjà commencé')
+        ->and(fn () => Ventes::appliquerMaintenant($suivante, null))->toThrow(ValidationException::class, 'commence aujourd');
+});
+
+it("remet une installation à l'essai : tout ouvert, abonnements résiliés, historique gardé", function () {
+    Ventes::vendre($this->vision, uneOffre('LICENCE_VISION_STARTER'), 'USD', null, null);
+    Ventes::vendre($this->eglise, uneOffre('ACCES_EGLISE_STARTER'), 'USD', null, null);
+    expect(EtatLicence::pour($this->installation->refresh())['statut'])->toBe(EtatLicence::ACTIF);
+
+    Installations::remettreALEssai($this->installation, 'Démonstration', null);
+
+    $etat = EtatLicence::pour($this->installation->refresh());
+    expect($etat['statut'])->toBe(EtatLicence::ESSAI)
+        ->and($etat['modules'])->toBeNull()
+        ->and($etat['fin'])->toBe(now()->addDays(Reglages::valeur('essai_jours'))->toDateString())
+        ->and(Abonnement::query()->whereNull('resilie_le')->count())->toBe(0)
+        ->and(PeriodeAbonnement::query()->count())->toBe(2);
+
+    // Une licence vendue ensuite reprend la main sur l'essai.
+    Ventes::vendre($this->vision, uneOffre('LICENCE_VISION_STARTER'), 'USD', null, null);
+    expect(EtatLicence::pour($this->installation->refresh())['statut'])->toBe(EtatLicence::ACTIF);
 });
