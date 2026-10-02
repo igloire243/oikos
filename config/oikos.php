@@ -27,4 +27,11 @@ return [
     // Payer en ligne : éteint tant qu'un fournisseur réel n'est pas branché (PaiementsEnLigne).
     'paiement_en_ligne' => (bool) env('PAIEMENT_EN_LIGNE', false),
     'passerelle_paiement' => env('PASSERELLE_PAIEMENT', 'simulee'),
+
+    // Flutterwave : clés de la console du fournisseur, jamais dans le code (https://dashboard.flutterwave.com).
+    'flutterwave' => [
+        'cle_secrete' => env('FLUTTERWAVE_SECRET_KEY'),
+        'hash_notification' => env('FLUTTERWAVE_SECRET_HASH'),
+        'url' => env('FLUTTERWAVE_URL', 'https://api.flutterwave.com/v3'),
+    ],
 ];

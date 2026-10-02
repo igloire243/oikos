@@ -2,6 +2,7 @@
 
 namespace App\Metier\Commerce;
 
+use App\Metier\Commerce\Passerelles\Flutterwave;
 use App\Metier\Commerce\Passerelles\Passerelle;
 use App\Metier\Commerce\Passerelles\PasserelleSimulee;
 use App\Metier\Journal\Journal;
@@ -33,6 +34,9 @@ use Illuminate\Validation\ValidationException;
  */
 class PaiementsEnLigne
 {
+    /** Les noms que l'URL de notification accepte. */
+    public const PASSERELLES = ['simulee', 'flutterwave'];
+
     public static function actif(): bool
     {
         return (bool) config('oikos.paiement_en_ligne', false);
@@ -46,6 +50,7 @@ class PaiementsEnLigne
             'simulee' => app()->isProduction()
                 ? throw new \RuntimeException('La passerelle simulée est interdite en production.')
                 : new PasserelleSimulee,
+            'flutterwave' => new Flutterwave,
             default => throw new \RuntimeException("Passerelle de paiement inconnue : {$nom}."),
         };
     }

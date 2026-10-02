@@ -343,7 +343,25 @@ nouveau périmètre s'applique.
   Elle paie TOUT le reste dû ; un versement partiel reste une saisie à la main.
 - **Brancher un vrai fournisseur = UNE classe** implémentant `Passerelles\Passerelle` (`initier`, `verifier`)
   et une ligne dans `PaiementsEnLigne::passerelle()`. `PasserelleSimulee` (page de simulation) est
-  **interdite en production**. Aucun fournisseur réel n'est branché : il manque le choix et les clés d'essai.
+  **interdite en production**. 
 - L'écran Factures offre « Copier le lien de paiement » quand l'option est allumée.
 
-**123 tests.**
+
+### Flutterwave (`Passerelles\Flutterwave`, API v3 « Standard »)
+
+`PASSERELLE_PAIEMENT=flutterwave`, plus `FLUTTERWAVE_SECRET_KEY` et `FLUTTERWAVE_SECRET_HASH` dans le `.env`
+(jamais dans le code). Le client paie sur la page hébergée du fournisseur ; aucune donnée de paiement ne passe
+par la console. Dans le tableau de bord Flutterwave : adresse de notification =
+`https://<console>/payer/notification/flutterwave`, et le « secret hash » saisi là est celui du `.env`.
+
+- **Unités, pas centimes** : Flutterwave compte en 12.50 ; la conversion passe par `Montant`, la comparaison au
+  retour se refait en centimes.
+- **Seul `verify_by_reference` fait foi.** `?status=successful` sur l'adresse de retour ne prouve rien (testé).
+- **La notification est authentifiée** par l'en-tête `verif-hash`. Sans secret configuré, TOUTE notification est
+  refusée — un contrôle qui s'ouvre quand il n'est pas réglé n'en est pas un. Authentique, elle ne fait que
+  DÉSIGNER une demande ; l'argent n'entre que par `verifier()` (`Passerelle::referenceNotifiee`).
+- Fournisseur injoignable ou clé mauvaise : le client lit un message sur la page, pas une erreur 500.
+- Non essayé contre le vrai service (pas de clés d'essai) : les tests rejouent le contrat avec `Http::fake`.
+  Au premier essai réel, vérifier les moyens de paiement et devises ouverts sur le compte marchand.
+
+**128 tests.**

@@ -11,6 +11,7 @@ use App\Models\Offre;
 use App\Models\Paiement;
 use App\Models\User;
 use Database\Seeders\OffreSeeder;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -125,4 +126,83 @@ it('montre le lien de paiement sur l\'écran des factures quand le paiement est 
     allumer();
 
     expect(PaiementsEnLigne::lienPour($this->facture))->toContain('/payer/'.$this->facture->jeton_paiement);
+});
+
+/** FLUTTERWAVE — le contrat avec leur API, rejoué sans réseau. */
+function brancherFlutterwave(): void
+{
+    // Le `Http::fake()` de beforeEach répond 200 à tout : il passerait avant les réponses de chaque test.
+    Http::swap(new Factory);
+    config([
+        'oikos.paiement_en_ligne' => true,
+        'oikos.passerelle_paiement' => 'flutterwave',
+        'oikos.flutterwave.cle_secrete' => 'FLWSECK_TEST-xxx',
+        'oikos.flutterwave.hash_notification' => 'secret-de-notification',
+    ]);
+}
+
+it('envoie le client sur la page Flutterwave, montant en unités', function () {
+    brancherFlutterwave();
+    Http::fake(['*/payments' => Http::response(['status' => 'success', 'data' => ['link' => 'https://checkout.flutterwave.com/v3/hosted/pay/abc']])]);
+
+    $this->post(route('paiement.demarrer', $this->facture->jeton_paiement))
+        ->assertRedirect('https://checkout.flutterwave.com/v3/hosted/pay/abc');
+
+    $demande = DemandePaiement::query()->sole();
+    Http::assertSent(fn ($r) => str_ends_with($r->url(), '/payments')
+        && $r['tx_ref'] === $demande->reference
+        && $r['currency'] === 'USD'
+        && (float) $r['amount'] === (float) ($demande->montant_centimes / 100)
+        && $r->hasHeader('Authorization', 'Bearer FLWSECK_TEST-xxx'));
+});
+
+it('dit au client que le prestataire est indisponible, sans erreur 500', function () {
+    brancherFlutterwave();
+    Http::fake(['*/payments' => Http::response(['status' => 'error', 'message' => 'Invalid key'], 401)]);
+
+    $this->from(route('paiement.afficher', $this->facture->jeton_paiement))
+        ->post(route('paiement.demarrer', $this->facture->jeton_paiement))
+        ->assertSessionHasErrors('facture');
+});
+
+it('encaisse sur la foi de verify_by_reference, pas de l\'adresse de retour', function () {
+    brancherFlutterwave();
+    Http::fake(['*/payments' => Http::response(['data' => ['link' => 'https://x.test/p']])]);
+    PaiementsEnLigne::initier($this->facture);
+    $demande = DemandePaiement::query()->sole();
+
+    Http::swap(new Factory);   // un stub déjà posé passerait avant le nouveau
+    // L'adresse de retour affirme « successful » ; le fournisseur dit « pending » : rien n'entre.
+    Http::fake(['*/transactions/verify_by_reference*' => Http::response(['data' => ['status' => 'pending', 'amount' => $demande->montant_centimes / 100, 'currency' => 'USD', 'id' => 77]])]);
+    $this->get(route('paiement.retour', $demande->reference).'?status=successful')->assertOk();
+    expect(Paiement::query()->count())->toBe(0);
+
+    Http::swap(new Factory);
+    Http::fake(['*/transactions/verify_by_reference*' => Http::response(['data' => ['status' => 'successful', 'amount' => $demande->montant_centimes / 100, 'currency' => 'USD', 'id' => 77]])]);
+    $this->get(route('paiement.retour', $demande->reference))->assertOk();
+
+    expect(Paiement::query()->sole()->reference)->toBe('FLW-77')
+        ->and($demande->fresh()->statut)->toBe(DemandePaiement::CONFIRMEE);
+});
+
+it('refuse une notification sans le bon verif-hash', function () {
+    brancherFlutterwave();
+
+    $this->postJson(route('paiement.notification', 'flutterwave'), ['data' => ['tx_ref' => 'PAY-X']])->assertUnauthorized();
+    $this->postJson(route('paiement.notification', 'flutterwave'), ['data' => ['tx_ref' => 'PAY-X']], ['verif-hash' => 'faux'])->assertUnauthorized();
+
+    config(['oikos.flutterwave.hash_notification' => '']);
+    $this->postJson(route('paiement.notification', 'flutterwave'), ['data' => ['tx_ref' => 'PAY-X']], ['verif-hash' => ''])->assertUnauthorized();
+});
+
+it('traite une notification authentique en interrogeant le fournisseur', function () {
+    brancherFlutterwave();
+    Http::fake(['*/payments' => Http::response(['data' => ['link' => 'https://x.test/p']])]);
+    PaiementsEnLigne::initier($this->facture);
+    $demande = DemandePaiement::query()->sole();
+    Http::fake(['*/transactions/verify_by_reference*' => Http::response(['data' => ['status' => 'successful', 'amount' => $demande->montant_centimes / 100, 'currency' => 'USD', 'id' => 9]])]);
+
+    $this->postJson(route('paiement.notification', 'flutterwave'), ['event' => 'charge.completed', 'data' => ['tx_ref' => $demande->reference]], ['verif-hash' => 'secret-de-notification'])->assertOk();
+
+    expect(Paiement::query()->count())->toBe(1);
 });

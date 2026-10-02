@@ -46,8 +46,13 @@ const payer = () => form.post(route('paiement.demarrer', props.jeton));
         >
             Cette facture est soldée. Merci !
         </p>
-        <Bouton v-else class="mt-5 w-full" :desactive="form.processing" @click="payer">
-            Payer {{ facture.restant }}
-        </Bouton>
+        <template v-else>
+            <p v-if="form.errors.facture" class="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+                {{ form.errors.facture }}
+            </p>
+            <Bouton class="mt-5 w-full" :desactive="form.processing" @click="payer">
+                Payer {{ facture.restant }}
+            </Bouton>
+        </template>
     </AuthDivise>
 </template>

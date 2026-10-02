@@ -41,7 +41,15 @@ class PaiementPublicController extends Controller
 
     public function demarrer(string $jeton): \Symfony\Component\HttpFoundation\Response
     {
-        $url = PaiementsEnLigne::initier($this->facture($jeton));
+        // Hors du try : un 404 (HttpException) est lui aussi une RuntimeException, et ne doit pas devenir un message.
+        $facture = $this->facture($jeton);
+
+        try {
+            $url = PaiementsEnLigne::initier($facture);
+        } catch (\RuntimeException $e) {
+            // Fournisseur injoignable ou mal réglé : le client le lit sur la page, pas dans une erreur 500.
+            return back()->withErrors(['facture' => $e->getMessage()]);
+        }
 
         // Une adresse d'un autre domaine : une visite Inertia ne sait pas la suivre.
         return Inertia::location($url);
@@ -66,7 +74,11 @@ class PaiementPublicController extends Controller
     {
         abort_unless(PaiementsEnLigne::actif(), 404);
 
-        $reference = (string) $requete->input('reference', '');
+        // Chaque fournisseur authentifie SA notification (signature, jeton secret) ; une fausse n'arrive pas ici.
+        abort_unless(in_array($passerelle, PaiementsEnLigne::PASSERELLES, true), 404);
+        $reference = PaiementsEnLigne::passerelle($passerelle)->referenceNotifiee($requete);
+        abort_if($reference === null, 401);
+
         $demande = DemandePaiement::query()->where('reference', $reference)->where('passerelle', $passerelle)->first();
         if ($demande !== null) {
             PaiementsEnLigne::confirmer($demande);

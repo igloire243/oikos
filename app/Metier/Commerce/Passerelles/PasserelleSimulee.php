@@ -3,6 +3,7 @@
 namespace App\Metier\Commerce\Passerelles;
 
 use App\Models\DemandePaiement;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -35,6 +36,14 @@ class PasserelleSimulee implements Passerelle
             'devise' => $demande->devise,
             'reference_externe' => 'SIM-'.$demande->reference,
         ];
+    }
+
+    /** `$montantCentimes` : pour essayer le cas où le fournisseur confirme une autre somme que celle demandée. */
+    public function referenceNotifiee(Request $requete): ?string
+    {
+        $reference = (string) $requete->input('reference', '');
+
+        return $reference !== '' ? $reference : null;
     }
 
     /** `$montantCentimes` : pour essayer le cas où le fournisseur confirme une autre somme que celle demandée. */

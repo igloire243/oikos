@@ -3,6 +3,7 @@
 namespace App\Metier\Commerce\Passerelles;
 
 use App\Models\DemandePaiement;
+use Illuminate\Http\Request;
 
 /**
  * UN FOURNISSEUR DE PAIEMENT, vu du côté de la console — deux questions, pas davantage.
@@ -24,4 +25,11 @@ interface Passerelle
      *                                                                                                       `statut` vaut 'PAYE', 'ECHEC' ou 'EN_ATTENTE' ; null si le fournisseur ne connaît pas la demande.
      */
     public function verifier(DemandePaiement $demande): ?array;
+
+    /**
+     * La référence de NOTRE demande qu'une notification du fournisseur désigne — après avoir vérifié que
+     * la notification vient bien de lui. Null si elle n'est pas authentique : on ne regarde alors rien.
+     * Même authentique, elle ne fait que DÉSIGNER une demande ; l'argent n'entre que par `verifier()`.
+     */
+    public function referenceNotifiee(Request $requete): ?string;
 }
