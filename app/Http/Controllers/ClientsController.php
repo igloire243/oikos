@@ -159,25 +159,32 @@ class ClientsController extends Controller
         $eglises = $entites->where('type', Entite::EXTENSION)->sortBy('nom');
         $refsAntennes = $antennes->pluck('ref')->all();
 
-        $noeuds = [];
-
-        foreach ($entites->where('type', Entite::VISION) as $vision) {
-            $noeuds[] = $presenter($vision) + ['enfants' => []];
-        }
+        $branches = [];
 
         foreach ($antennes as $antenne) {
-            $noeuds[] = $presenter($antenne) + [
-                'enfants' => $eglises->where('parent_ref', $antenne->ref)->values()->map($presenter)->all(),
+            $branches[] = $presenter($antenne) + [
+                'enfants' => $eglises->where('parent_ref', $antenne->ref)->values()->map(fn (Entite $e) => $presenter($e) + ['enfants' => []])->all(),
             ];
         }
 
         $orphelines = $eglises->reject(fn (Entite $e) => in_array($e->parent_ref, $refsAntennes, true));
         if ($orphelines->isNotEmpty()) {
-            $noeuds[] = ['id' => 0, 'reference' => null, 'type' => 'AUTRES', 'libelle_type' => 'Sans antenne remontée', 'nom' => 'Églises sans antenne', 'effectif' => null, 'vue_le' => null,
-                'enfants' => $orphelines->values()->map($presenter)->all()];
+            $branches[] = ['id' => 0, 'reference' => null, 'type' => 'AUTRES', 'libelle_type' => 'Sans antenne remontée', 'nom' => 'Églises sans antenne', 'effectif' => null, 'vue_le' => null,
+                'abonnement' => null,
+                'enfants' => $orphelines->values()->map(fn (Entite $e) => $presenter($e) + ['enfants' => []])->all()];
         }
 
-        return $noeuds;
+        // LA VISION EST LA RACINE : ses antennes sont ses sous-dossiers, leurs églises ce qu'ils
+        // contiennent — l'arborescence « en dossiers » de l'ancienne console. Sans Vision remontée
+        // (une installation qui n'a pas encore tout dit), les branches restent au premier niveau
+        // plutôt que de disparaître.
+        $visions = $entites->where('type', Entite::VISION)->values();
+
+        if ($visions->isEmpty()) {
+            return $branches;
+        }
+
+        return $visions->map(fn (Entite $vision, int $i) => $presenter($vision) + ['enfants' => $i === 0 ? $branches : []])->all();
     }
 
     /**

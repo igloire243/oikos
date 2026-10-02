@@ -264,3 +264,12 @@ L'historique d'un client montre, sous chaque période, le numéro et l'état de 
 référence unique, non reçu/rétabli, le rappel qui ne fait jamais échouer l'encaissement et la
 numérotation par année. *Reste à faire côté console* : les demandes de contact, les réglages et le
 journal (C4), le paiement en ligne (C5).
+
+**Deux retouches demandées après la livraison de C3.** Sur « Offres », un clic sur le nombre de
+modules déroule la liste de ce que l'offre ouvre vraiment, espace par espace (`clesOuvertes()`, la
+même que celle que la licence sert — jamais une seconde lecture) ; les écrans qui ne se vendent pas
+n'y comptent pas. Et les entités d'une installation reprennent l'**arborescence en dossiers** de
+l'ancienne console : la Vision à la racine, ses antennes en sous-dossiers, leurs églises dedans
+(`Composants/Console/NoeudEntite.vue`, récursif, deux premiers étages ouverts, nombre d'éléments
+affiché une fois plié). Une église dont l'antenne n'a pas été remontée reste visible, dans un dossier
+« Églises sans antenne » : la cacher ferait disparaître quelqu'un à qui l'on vend peut-être déjà.

@@ -196,3 +196,14 @@ it('vend depuis la fiche : aperçu, vente et résiliation par les routes', funct
 
     expect($abonnement->refresh()->estResilie())->toBeTrue();
 });
+
+it('range les entités en dossiers : la Vision contient ses antennes, qui contiennent leurs églises', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('console.clients.show', $this->installation->client_id))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('installations.0.arbre', fn ($arbre) => count($arbre) === 1
+                && $arbre[0]['type'] === 'VISION'
+                && $arbre[0]['enfants'][0]['nom'] === 'Antenne Lualaba'
+                && $arbre[0]['enfants'][0]['enfants'][0]['nom'] === 'Béthel Kolwezi'));
+});

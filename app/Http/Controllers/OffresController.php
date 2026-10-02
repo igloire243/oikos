@@ -51,6 +51,17 @@ class OffresController extends Controller
                 'libelle_plafond' => $o->plafond_acces ? Offre::PALIERS[$o->plafond_acces] : null,
                 'modules' => $o->modules,
                 'nombre_modules' => $o->modules === null ? null : count($o->modules),
+                // La liste que déroule le clic sur le nombre : ce que l'offre ouvre VRAIMENT
+                // (`clesOuvertes()`, la même que celle que la licence sert), rangée par espace —
+                // jamais une seconde façon de la lire. Les écrans qui ne se vendent pas (réglages,
+                // sécurité) sont toujours ouverts : ils ne comptent pas parmi les « modules ».
+                'modules_inclus' => collect($o->clesOuvertes())
+                    ->filter(fn (string $cle) => Modules::estVendable($cle))
+                    ->groupBy(fn (string $cle) => Modules::toutes()[$cle]['espace'])
+                    ->map(fn ($cles, $espace) => [
+                        'espace' => Modules::libelleEspace((string) $espace),
+                        'modules' => $cles->map(fn (string $cle) => Modules::libelle($cle))->values(),
+                    ])->values(),
                 'publique' => $o->publique,
                 'ordre' => $o->ordre,
                 'retiree' => $o->estRetiree(),

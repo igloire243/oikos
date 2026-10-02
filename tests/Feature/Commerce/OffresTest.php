@@ -118,3 +118,17 @@ it("crée une offre depuis l'écran, prix tapés à la française", function () 
         ->assertInertia(fn (Assert $page) => $page->component('Console/Offres/Index')->has('offres', 1)
             ->has('modules_par_niveau.EXTENSION', 2));
 });
+
+it('sert, pour chaque offre, la liste des modules qu\'elle ouvre — celle que déroule le clic', function () {
+    $this->seed(OffreSeeder::class);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('console.offres.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Console/Offres/Index')
+            ->where('offres', fn ($offres) => collect($offres)->every(fn ($o) => isset($o['modules_inclus']))
+                // Une offre qui énumère n'en liste que ce qu'elle énumère ; « tous » liste tout le vendable.
+                && collect($offres)->firstWhere('code', 'LICENCE_VISION_PREMIUM')['nombre_modules'] === null
+                && collect(collect($offres)->firstWhere('code', 'LICENCE_VISION_PREMIUM')['modules_inclus'])->flatMap(fn ($g) => $g['modules'])->isNotEmpty()));
+});

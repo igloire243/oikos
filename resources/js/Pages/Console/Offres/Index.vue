@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import { Archive, ArchiveRestore, Pencil, Plus, Tags, Trash2 } from 'lucide-vue-next';
+import { Archive, ArchiveRestore, ChevronDown, Pencil, Plus, Tags, Trash2 } from 'lucide-vue-next';
 import LayoutConsole from '@/Layouts/LayoutConsole.vue';
 import EnTetePage from '@/Composants/EnTetePage.vue';
 import Bouton from '@/Composants/Bouton.vue';
@@ -48,6 +48,15 @@ const NIVEAUX = [
     { valeur: 'EXTENSION', libelle: 'Accès — une église' },
     { valeur: 'ANTENNE', libelle: 'Accès — une antenne' },
 ];
+
+/* --- La liste des modules d'une offre, dépliée au clic --------------------------------------- */
+
+const modulesOuverts = ref(new Set());
+const basculerModules = (id) => {
+    const suite = new Set(modulesOuverts.value);
+    suite.has(id) ? suite.delete(id) : suite.add(id);
+    modulesOuverts.value = suite;
+};
 
 /* --- Le formulaire -------------------------------------------------------------------------- */
 
@@ -220,16 +229,50 @@ const erreursTranches = computed(() =>
                         </p>
 
                         <p class="mt-3 flex flex-wrap gap-1.5 text-xs">
-                            <Badge ton="info">{{
-                                offre.nombre_modules === null
-                                    ? 'Tous les modules, futurs compris'
-                                    : offre.nombre_modules + ' modules'
-                            }}</Badge>
+                            <!-- Un clic déroule ce que l'offre ouvre vraiment, espace par espace. -->
+                            <button
+                                type="button"
+                                class="inline-flex min-h-8 items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 ring-1 ring-inset ring-blue-200 hover:bg-blue-100"
+                                :aria-expanded="modulesOuverts.has(offre.id)"
+                                @click="basculerModules(offre.id)"
+                            >
+                                {{
+                                    offre.nombre_modules === null
+                                        ? 'Tous les modules, futurs compris'
+                                        : offre.nombre_modules + ' modules'
+                                }}
+                                <ChevronDown
+                                    class="h-3.5 w-3.5 transition"
+                                    :class="modulesOuverts.has(offre.id) ? 'rotate-180' : ''"
+                                />
+                            </button>
                             <Badge v-if="offre.libelle_plafond" ton="ardoise"
                                 >Accès jusqu'au {{ offre.libelle_plafond }}</Badge
                             >
                             <Badge v-if="!offre.publique" ton="alerte">Négociée</Badge>
                         </p>
+
+                        <div
+                            v-if="modulesOuverts.has(offre.id)"
+                            class="mt-3 space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3"
+                        >
+                            <p v-if="offre.nombre_modules === null" class="text-xs text-slate-500">
+                                Tout l'espace : ces modules, et ceux qu'une mise à jour du produit ajoutera.
+                            </p>
+                            <div v-for="groupe in offre.modules_inclus" :key="groupe.espace">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    {{ groupe.espace }}
+                                </p>
+                                <ul class="mt-1 grid gap-x-4 gap-y-0.5 text-sm text-slate-700 sm:grid-cols-2">
+                                    <li v-for="module in groupe.modules" :key="module" class="min-w-0 truncate">
+                                        · {{ module }}
+                                    </li>
+                                </ul>
+                            </div>
+                            <p v-if="!offre.modules_inclus.length" class="text-sm text-slate-500">
+                                Aucun module vendu avec cette offre.
+                            </p>
+                        </div>
 
                         <div class="mt-auto grid grid-cols-2 gap-2 pt-4">
                             <Bouton

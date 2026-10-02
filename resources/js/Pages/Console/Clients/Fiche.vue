@@ -22,7 +22,7 @@ import Modale from '@/Composants/Modale.vue';
 import ChampTexte from '@/Composants/ChampTexte.vue';
 import ChampZoneTexte from '@/Composants/ChampZoneTexte.vue';
 import ChampSelect from '@/Composants/ChampSelect.vue';
-import LigneEntite from '@/Composants/Console/LigneEntite.vue';
+import NoeudEntite from '@/Composants/Console/NoeudEntite.vue';
 import http from '@/http.js';
 
 /**
@@ -369,27 +369,14 @@ const lieu = computed(() => [props.client.ville, props.client.pays].filter(Boole
                     <p v-if="!installation.arbre.length" class="mt-1 text-sm text-slate-400">
                         Rien de remonté encore. L'arbre arrive à la première synchronisation.
                     </p>
-                    <ul v-else class="mt-2 space-y-2">
-                        <li v-for="noeud in installation.arbre" :key="noeud.reference ?? 'autres'">
-                            <LigneEntite
-                                :entite="noeud"
-                                @vendre="ouvrirVente"
-                                @historique="historique = $event"
-                            />
-                            <ul
-                                v-if="noeud.enfants.length"
-                                class="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-3"
-                            >
-                                <li v-for="enfant in noeud.enfants" :key="enfant.reference">
-                                    <LigneEntite
-                                        :entite="enfant"
-                                        enfant
-                                        @vendre="ouvrirVente"
-                                        @historique="historique = $event"
-                                    />
-                                </li>
-                            </ul>
-                        </li>
+                    <ul v-else class="mt-2 space-y-1">
+                        <NoeudEntite
+                            v-for="noeud in installation.arbre"
+                            :key="noeud.reference ?? 'autres'"
+                            :noeud="noeud"
+                            @vendre="ouvrirVente"
+                            @historique="historique = $event"
+                        />
                     </ul>
                 </div>
 
