@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Metier\Console\Menu;
+use App\Metier\Console\Reglages;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -28,6 +29,9 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+
+            // L'identité de l'éditeur : le pied du site commercial et la page de paiement la montrent.
+            'editeur' => fn () => Reglages::editeur(),
 
             'menu' => fn () => $request->user() ? Menu::groupes() : [],
 

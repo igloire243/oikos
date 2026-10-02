@@ -3,6 +3,7 @@
 namespace App\Metier\Commerce\Passerelles;
 
 use App\Metier\Commerce\Montant;
+use App\Metier\Console\Reglages;
 use App\Models\DemandePaiement;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class Flutterwave implements Passerelle
 
     public function referenceNotifiee(Request $requete): ?string
     {
-        $secret = config('oikos.flutterwave.hash_notification');
+        $secret = Reglages::secret('flutterwave_hash');
 
         if (! is_string($secret) || $secret === '' || ! hash_equals($secret, (string) $requete->header('verif-hash'))) {
             return null;
@@ -90,11 +91,33 @@ class Flutterwave implements Passerelle
         return is_string($reference) && $reference !== '' ? $reference : null;
     }
 
+    /**
+     * ESSAIE LA CLÉ, sans rien payer : une lecture authentifiée (les soldes du compte). C'est le seul moyen de
+     * savoir, avant le premier client, que la clé collée à l'écran est la bonne — et de le dire en clair plutôt
+     * que par une erreur au moment de payer. Non éprouvé contre le service réel : le contrat est rejoué en test.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public static function tester(): array
+    {
+        try {
+            $reponse = (new self)->http()->get('/balances');
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => $e instanceof \RuntimeException ? $e->getMessage() : 'Flutterwave ne répond pas : '.$e->getMessage()];
+        }
+
+        if ($reponse->successful()) {
+            return ['ok' => true, 'message' => 'Flutterwave a accepté la clé.'];
+        }
+
+        return ['ok' => false, 'message' => 'Flutterwave a refusé la clé ('.$reponse->status().') : '.($reponse->json('message') ?? 'sans détail').'.'];
+    }
+
     private function http(): PendingRequest
     {
-        $cle = config('oikos.flutterwave.cle_secrete');
-        if (! is_string($cle) || $cle === '') {
-            throw new \RuntimeException('Flutterwave : FLUTTERWAVE_SECRET_KEY n\'est pas renseignée.');
+        $cle = Reglages::secret('flutterwave_cle_secrete');
+        if ($cle === null) {
+            throw new \RuntimeException('Flutterwave : la clé secrète n\'est pas renseignée (écran Réglages).');
         }
 
         return Http::withToken($cle)->baseUrl((string) config('oikos.flutterwave.url'))->acceptJson()->timeout(15);

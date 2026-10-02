@@ -2,6 +2,7 @@
 
 namespace App\Metier\Commerce;
 
+use App\Metier\Console\Reglages;
 use App\Metier\Journal\Journal;
 use App\Metier\Licence\Rappel;
 use App\Models\Facture;
@@ -54,7 +55,7 @@ class Facturation
             'montant_centimes' => $periode->montant_centimes,
             'devise' => $periode->devise,
             'emise_le' => $aujourdhui,
-            'echeance_le' => $aujourdhui->copy()->addDays(Facture::DELAI_JOURS),
+            'echeance_le' => $aujourdhui->copy()->addDays(Reglages::valeur('echeance_jours')),
             'emise_par_id' => $par?->id,
         ]);
     }

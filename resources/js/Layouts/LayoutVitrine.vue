@@ -21,6 +21,7 @@ const page = usePage();
 // Un opérateur déjà connecté ne revoit pas le formulaire : `/console/login` le renvoie à son tableau
 // de bord, et un lien « Connexion » qui ne montre rien ressemble à un lien cassé. Il lit donc
 // « Ma console », et mène là où il va vraiment.
+const editeur = computed(() => page.props.editeur ?? {});
 const connecte = computed(() => page.props.auth?.user != null);
 const lienConsole = computed(() => (connecte.value ? route('console.accueil') : route('login')));
 const libelleConsole = computed(() => (connecte.value ? 'Ma console' : 'Connexion'));
@@ -109,7 +110,17 @@ const actif = (nom) => route().current(nom);
 
             <footer class="border-t border-slate-200 bg-slate-50">
                 <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <p class="font-semibold text-slate-700">Oikos — la gestion de votre église.</p>
+                    <div>
+                        <p class="font-semibold text-slate-700">{{ editeur.nom || 'Oikos' }} — la gestion de votre église.</p>
+                        <!-- Rien n'est affiché pour un champ que l'éditeur n'a pas rempli (Réglages → Éditeur). -->
+                        <p v-if="editeur.email || editeur.telephone || editeur.adresse" class="mt-1 text-xs">
+                            <a v-if="editeur.email" :href="`mailto:${editeur.email}`" class="hover:text-slate-800">{{ editeur.email }}</a>
+                            <span v-if="editeur.email && (editeur.telephone || editeur.adresse)"> · </span>
+                            <span v-if="editeur.telephone">{{ editeur.telephone }}</span>
+                            <span v-if="editeur.telephone && editeur.adresse"> · </span>
+                            <span v-if="editeur.adresse">{{ editeur.adresse }}</span>
+                        </p>
+                    </div>
                     <p class="flex flex-wrap gap-x-4 gap-y-1">
                         <Link :href="route('vitrine.tarifs')" class="hover:text-slate-800">Tarifs</Link>
                         <Link :href="route('demande.formulaire')" class="hover:text-slate-800">Demander une offre</Link>

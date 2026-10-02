@@ -365,3 +365,25 @@ par la console. Dans le tableau de bord Flutterwave : adresse de notification =
   Au premier essai réel, vérifier les moyens de paiement et devises ouverts sur le compte marchand.
 
 **128 tests.**
+
+### Les réglages de la console, élargis (paiement, facturation, éditeur)
+
+L'écran « Réglages » n'avait que les quatre durées de la licence : on ne voyait pas le paiement en ligne, et
+la clé du prestataire ne pouvait se poser que dans le `.env` du serveur. Il a maintenant quatre onglets —
+Licence, Facturation, Paiement en ligne, Éditeur — et la même règle qu'au produit : **un réglage n'y entre que
+si un code déjà livré le LIT** (la table `Reglages::AUTRES` dit lequel, colonne `lu_par`).
+
+- `reglages.valeur` est un texte : durées, booléens, choix et **secrets chiffrés** (`Crypt`, jamais renvoyés à
+  l'écran : on dit « posée (cet écran) » ou « posée (.env du serveur) », jamais ce qu'elle vaut). Le journal
+  écrit « remplacé » ou « effacé », jamais la valeur d'un secret.
+- Ce qui est saisi à l'écran l'emporte ; sinon le `.env` sert (`repli`) : un déploiement qui a posé ses clés
+  dans le `.env` continue de marcher sans les ressaisir. Un champ secret laissé vide ne change rien.
+- **Facturation** : le délai de paiement (15 jours par défaut) remplace la constante `Facture::DELAI_JOURS` ;
+  il ne vaut que pour les factures émises ensuite.
+- **Paiement en ligne** : allumer, choisir le prestataire, poser les clés Flutterwave, copier l'adresse de
+  notification, **essayer la clé** (`Flutterwave::tester()`, une lecture authentifiée des soldes — le contrat
+  est rejoué en test, jamais éprouvé contre le service réel).
+- **Éditeur** : nom, e-mail, téléphone, adresse, lus par le pied du site commercial et la page de paiement
+  (prop partagée `editeur`).
+
+**139 tests.**

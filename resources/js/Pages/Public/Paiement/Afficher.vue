@@ -1,5 +1,6 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 import AuthDivise from '@/Layouts/AuthDivise.vue';
 import Bouton from '@/Composants/Bouton.vue';
 
@@ -13,6 +14,8 @@ const props = defineProps({
 });
 
 const form = useForm({});
+// Une question sur une facture : à qui écrire (Réglages → Éditeur). Rien si l'éditeur n'a rien dit.
+const editeur = computed(() => usePage().props.editeur ?? {});
 const payer = () => form.post(route('paiement.demarrer', props.jeton));
 </script>
 
@@ -54,5 +57,11 @@ const payer = () => form.post(route('paiement.demarrer', props.jeton));
                 Payer {{ facture.restant }}
             </Bouton>
         </template>
+        <p v-if="editeur.email || editeur.telephone" class="mt-5 text-xs text-gray-500">
+            Une question sur cette facture ?
+            <a v-if="editeur.email" :href="`mailto:${editeur.email}`" class="underline">{{ editeur.email }}</a>
+            <span v-if="editeur.email && editeur.telephone"> · </span>
+            <span v-if="editeur.telephone">{{ editeur.telephone }}</span>
+        </p>
     </AuthDivise>
 </template>

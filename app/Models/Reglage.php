@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  * UN RÉGLAGE DE LA CONSOLE — voir `App\Metier\Console\Reglages`, seul écrivain.
  *
  * @property string $cle
- * @property int $valeur
+ * @property string|null $valeur
  */
 class Reglage extends Model
 {
@@ -26,5 +26,5 @@ class Reglage extends Model
     protected $fillable = ['cle', 'valeur', 'modifie_le'];
 
     /** @var array<string, string> */
-    protected $casts = ['valeur' => 'integer', 'modifie_le' => 'datetime'];
+    protected $casts = ['modifie_le' => 'datetime'];
 }

@@ -5,6 +5,7 @@ namespace App\Metier\Commerce;
 use App\Metier\Commerce\Passerelles\Flutterwave;
 use App\Metier\Commerce\Passerelles\Passerelle;
 use App\Metier\Commerce\Passerelles\PasserelleSimulee;
+use App\Metier\Console\Reglages;
 use App\Metier\Journal\Journal;
 use App\Models\DemandePaiement;
 use App\Models\Facture;
@@ -39,12 +40,18 @@ class PaiementsEnLigne
 
     public static function actif(): bool
     {
-        return (bool) config('oikos.paiement_en_ligne', false);
+        // Écran « Réglages » d'abord, `.env` ensuite : un déploiement existant continue de marcher.
+        return Reglages::booleen('paiement_en_ligne');
+    }
+
+    public static function nomDeLaPasserelle(): string
+    {
+        return (string) Reglages::texte('passerelle', 'simulee');
     }
 
     public static function passerelle(?string $nom = null): Passerelle
     {
-        $nom ??= (string) config('oikos.passerelle_paiement', 'simulee');
+        $nom ??= self::nomDeLaPasserelle();
 
         return match ($nom) {
             'simulee' => app()->isProduction()
@@ -84,7 +91,7 @@ class PaiementsEnLigne
             'reference' => 'PAY-'.Str::upper(Str::random(14)),
             'montant_centimes' => $restant,
             'devise' => $facture->devise,
-            'passerelle' => (string) config('oikos.passerelle_paiement', 'simulee'),
+            'passerelle' => self::nomDeLaPasserelle(),
         ]);
 
         return $passerelle->initier($demande);

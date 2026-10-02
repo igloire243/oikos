@@ -96,6 +96,8 @@ Route::prefix('console')->group(function () {
             Route::patch('/demandes/{demande}/traitement', [DemandesController::class, 'traiter'])->name('demandes.traiter');
             Route::get('/reglages', [ReglagesController::class, 'index'])->name('reglages.index');
             Route::put('/reglages', [ReglagesController::class, 'update'])->name('reglages.update');
+            Route::put('/reglages/autres', [ReglagesController::class, 'autres'])->name('reglages.autres');
+            Route::post('/reglages/paiement/test', [ReglagesController::class, 'testerLePaiement'])->name('reglages.paiement.test');
             Route::get('/journal', [JournalController::class, 'index'])->name('journal.index');
 
             // Vendre se fait sur une ENTITÉ, jamais sur un client en bloc.

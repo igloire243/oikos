@@ -44,9 +44,6 @@ class Facture extends Model
         self::SOLDEE => 'Soldée',
     ];
 
-    /** Jours laissés au client pour payer : une échéance qu'on lit, jamais une coupure automatique. */
-    public const DELAI_JOURS = 15;
-
     /** @var list<string> */
     protected $fillable = ['numero', 'periode_abonnement_id', 'montant_centimes', 'devise', 'emise_le', 'echeance_le', 'emise_par_id', 'jeton_paiement'];
 
