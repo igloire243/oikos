@@ -25,7 +25,7 @@ defineProps({
             :icone="LayoutDashboard"
         />
 
-        <div class="mx-auto mt-6 max-w-5xl space-y-6 px-4 sm:px-0">
+        <div class="mx-auto mt-6 max-w-5xl space-y-6">
             <section class="rounded-2xl bg-white p-5 shadow-card ring-1 ring-slate-100">
                 <h2 class="font-semibold text-slate-800">À traiter</h2>
                 <p v-if="!a_traiter.length" class="mt-2 flex items-center gap-2 text-sm text-emerald-700">
@@ -50,7 +50,7 @@ defineProps({
             <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <CarteStat libelle="Clients" :valeur="chiffres.clients" :icone="icone('building-2')" />
                 <CarteStat
-                    libelle="Installations actives"
+                    libelle="Installations"
                     :valeur="chiffres.installations"
                     :icone="icone('server')"
                 />

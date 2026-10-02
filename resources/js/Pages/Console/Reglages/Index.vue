@@ -28,7 +28,7 @@ const enregistrer = () => form.put(route('console.reglages.update'), { preserveS
             :icone="Settings"
         />
 
-        <div class="mx-auto max-w-2xl space-y-4 px-4 py-5 sm:px-6">
+        <div class="mx-auto max-w-2xl space-y-4 py-5">
             <div
                 v-for="r in reglages"
                 :key="r.cle"

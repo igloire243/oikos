@@ -115,7 +115,7 @@ const retablir = (paiement) =>
             :icone="Receipt"
         />
 
-        <div class="mx-auto max-w-5xl space-y-4 px-4 py-5 sm:px-6">
+        <div class="mx-auto max-w-5xl space-y-4 py-5">
             <!-- Ce qui reste à recevoir : une ligne par devise, jamais un total qui les mélange. -->
             <div v-if="a_recevoir.length" class="rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-100">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Reste à recevoir</p>

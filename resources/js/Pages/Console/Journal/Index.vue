@@ -39,7 +39,7 @@ const filtrer = (valeur) => {
             :icone="ScrollText"
         />
 
-        <div class="mx-auto max-w-4xl space-y-4 px-4 py-5 sm:px-6">
+        <div class="mx-auto max-w-4xl space-y-4 py-5">
             <ChampSelect
                 :model-value="action"
                 label="Type de décision"
