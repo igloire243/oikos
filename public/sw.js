@@ -85,3 +85,46 @@ self.addEventListener('fetch', (evenement) => {
         );
     }
 });
+
+/**
+ * LES NOTIFICATIONS PUSH — un fait à traiter (facture en retard, abonnement qui s'achève), jamais
+ * un secret : le texte s'affiche sur un écran verrouillé. La charge est `{titre, corps, url}`,
+ * posée par `App\Metier\Notifications\PushNotifications`. Un clic rouvre la console déjà
+ * ouverte plutôt que d'en empiler une seconde.
+ */
+self.addEventListener('push', (evenement) => {
+    if (!evenement.data) {
+        return;
+    }
+
+    const { titre, corps, url } = evenement.data.json();
+
+    evenement.waitUntil(
+        self.registration.showNotification(titre, {
+            body: corps,
+            icon: '/icons/icon-192.png',
+            badge: '/icons/favicon-48.png',
+            data: { url: url ?? '/console' },
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (evenement) => {
+    evenement.notification.close();
+
+    const cible = evenement.notification.data?.url ?? '/console';
+
+    evenement.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((fenetres) => {
+            const ouverte = fenetres.find((f) => new URL(f.url).origin === self.location.origin);
+
+            if (ouverte) {
+                ouverte.navigate(cible);
+
+                return ouverte.focus();
+            }
+
+            return self.clients.openWindow(cible);
+        })
+    );
+});

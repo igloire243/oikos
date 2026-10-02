@@ -32,10 +32,16 @@ createInertiaApp({
         // une facture modifiés sur l'écran suivant restaient périmés (voir fraicheur.js).
         garderLesDonneesAJour();
 
-        return createApp({ render: () => h(App, props) })
+        const application = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);
+
+        // L'écran de démarrage de l'application installée (app.blade.php) s'efface une fois Vue
+        // monté ; sans cette ligne, un délai de six secondes le retire quand même.
+        document.getElementById('demarrage')?.classList.add('fini');
+
+        return application;
     },
     progress: {
         color: '#4B5563',

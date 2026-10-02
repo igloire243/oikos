@@ -5,6 +5,7 @@ use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\ClientsController;
 use App\Http\Controllers\InstallationsController;
 use App\Http\Controllers\OffresController;
+use App\Http\Controllers\PushController;
 use App\Http\Controllers\TableauDeBordController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,11 @@ Route::prefix('console')->group(function () {
         ->name('console.')
         ->group(function () {
             Route::get('/', TableauDeBordController::class)->name('accueil');
+            // Un réglage de l'APPAREIL, pas un écran : tout opérateur connecté peut s'abonner sur
+            // le téléphone qu'il tient en main.
+            Route::post('/push/abonnements', [PushController::class, 'abonner'])->name('push.abonner');
+            Route::delete('/push/abonnements', [PushController::class, 'desabonner'])->name('push.desabonner');
+
             Route::get('/catalogue', [CatalogueController::class, 'index'])->name('catalogue.index');
 
             Route::prefix('clients')->name('clients.')->group(function () {

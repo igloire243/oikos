@@ -1,9 +1,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { CircleUserRound, Download, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
+import { Bell, BellOff, CircleUserRound, Download, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
 import { icone } from '@/Composants/icones.js';
 import { useInstallation } from '@/Composables/installation';
+import { activerPush, desactiverPush, pushActif, pushSupporte } from '@/push.js';
 
 /**
  * LA MISE EN PAGE DE LA CONSOLE — la même grammaire que les espaces du produit, en plus court.
@@ -42,6 +43,39 @@ const barreDuBas = computed(() =>
 const seDeconnecter = () => router.post(route('logout'));
 
 const { invite: peutInstaller, installer } = useInstallation();
+
+// Un réglage de l'APPAREIL : la cloche n'existe que si le navigateur ET le serveur savent faire
+// (clé VAPID posée), et reflète l'abonnement réel du navigateur — jamais un état deviné.
+const pushDisponible = pushSupporte();
+const pushActifIci = ref(false);
+const pushEnCours = ref(false);
+
+if (pushDisponible) {
+    pushActif().then((actif) => (pushActifIci.value = actif));
+}
+
+const basculerPush = async () => {
+    if (pushEnCours.value) {
+        return;
+    }
+
+    pushEnCours.value = true;
+
+    try {
+        if (pushActifIci.value) {
+            await desactiverPush();
+            pushActifIci.value = false;
+        } else {
+            await activerPush();
+            pushActifIci.value = true;
+        }
+    } catch {
+        // Permission refusée : l'état reste celui du navigateur.
+        pushActifIci.value = await pushActif();
+    } finally {
+        pushEnCours.value = false;
+    }
+};
 </script>
 
 <template>
@@ -173,6 +207,21 @@ const { invite: peutInstaller, installer } = useInstallation();
                 </h1>
 
                 <div class="ml-auto flex items-center gap-1">
+                    <button
+                        v-if="pushDisponible"
+                        type="button"
+                        class="rounded-xl p-2 hover:bg-slate-100"
+                        :class="[
+                            pushActifIci ? 'text-[color:var(--marque-700)]' : 'text-slate-400',
+                            pushEnCours ? 'opacity-50' : '',
+                        ]"
+                        :disabled="pushEnCours"
+                        :title="pushActifIci ? 'Notifications activées — cliquer pour couper' : 'Activer les notifications'"
+                        @click="basculerPush"
+                    >
+                        <span class="sr-only">Notifications</span>
+                        <component :is="pushActifIci ? Bell : BellOff" class="h-5 w-5" />
+                    </button>
                     <button
                         v-if="peutInstaller"
                         type="button"

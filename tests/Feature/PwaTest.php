@@ -43,3 +43,16 @@ it('déclare le manifeste et le service worker dans la page', function () {
         ->assertSee('apple-touch-icon', false)
         ->assertSee("register('/sw.js')", false);
 });
+
+it("a une image de démarrage pour chaque taille d'iPhone et d'iPad déclarée", function () {
+    $page = file_get_contents(resource_path('views/app.blade.php'));
+
+    preg_match_all("#icons/demarrage/(\d+x\d+)\.png#", $page, $trouvees);
+
+    // Une image déclarée mais absente donnerait un écran blanc sur cet appareil, sans erreur.
+    expect($trouvees[1])->not->toBeEmpty();
+
+    foreach ($trouvees[1] as $taille) {
+        expect(public_path("icons/demarrage/{$taille}.png"))->toBeFile();
+    }
+});

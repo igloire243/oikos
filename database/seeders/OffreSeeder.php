@@ -19,11 +19,11 @@ class OffreSeeder extends Seeder
 {
     private const VISION_STARTER = ['vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports', 'vision.communications', 'vision.messagerie'];
 
-    private const VISION_STANDARD = [...self::VISION_STARTER, 'vision.membres', 'vision.medias', 'vision.finances', 'vision.export'];
+    private const VISION_STANDARD = [...self::VISION_STARTER, 'vision.membres', 'vision.medias', 'vision.finances', 'vision.export', 'vision.evenements', 'vision.commissions'];
 
     private const ANTENNE_STARTER = ['antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports', 'antenne.services', 'antenne.communications', 'antenne.messagerie'];
 
-    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export', 'antenne.delegations'];
+    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export', 'antenne.delegations', 'antenne.inventaire'];
 
     private const EGLISE_STARTER = [
         'extension.membres', 'extension.cultes', 'extension.tresorerie', 'extension.rapports', 'extension.equipes',
@@ -34,7 +34,7 @@ class OffreSeeder extends Seeder
     private const EGLISE_STANDARD = [
         ...self::EGLISE_STARTER,
         'extension.programmes', 'extension.prieres', 'extension.visites', 'extension.activites', 'extension.discipulariat',
-        'extension.formations', 'extension.medias', 'extension.discipline', 'extension.communications',
+        'extension.formations', 'extension.medias', 'extension.discipline', 'extension.communications', 'extension.inventaire',
         'departement.programmes', 'departement.ressources',
     ];
 

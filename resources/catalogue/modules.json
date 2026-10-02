@@ -70,12 +70,12 @@
                 "evenements": {
                     "libelle": "Organisation des événements",
                     "icone": "party-popper",
-                    "vendable": false
+                    "vendable": true
                 },
                 "commissions": {
                     "libelle": "Commissions",
                     "icone": "handshake",
-                    "vendable": false
+                    "vendable": true
                 },
                 "messagerie": {
                     "libelle": "Messagerie interne",

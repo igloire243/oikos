@@ -56,7 +56,7 @@ rien n'ouvre, ou ouvert que rien ne facture. Ici le fichier porte une **empreint
 clés triées) : un test vérifie qu'elle correspond à ses clés — une copie retouchée se trahit — et
 chaque installation annoncera l'empreinte de son propre catalogue à la synchronisation (Lot C1).
 
-**64 modules, 4 espaces, 55 vendables** — les mêmes chiffres que le produit, verrouillés par
+**65 modules, 4 espaces, 58 vendables** — les mêmes chiffres que le produit, verrouillés par
 `tests/Feature/Catalogue/CatalogueTest.php`. Le fichier porte aussi une liste `inclus` — les écrans
 de « Mon Église » (ouverts d'un bloc par `extension.espace_membre`) et ce qui vit dans tous les
 espaces (la Bible, la recherche, les notifications) : affichés sur l'écran Catalogue pour qu'on sache
@@ -236,3 +236,20 @@ remet la zone en haut à chaque page grâce à `scroll-region`.
 la batterie, par-dessus l'écran. **Données à jour au retour arrière** : `resources/js/fraicheur.js`,
 le même module que le produit (Inertia réaffiche sinon les données gardées dans l'historique).
 
+
+
+**Les notifications push de la console, et l'écran de démarrage.** `App\Metier\Notifications\
+PushNotifications` est la même classe que celle du produit (clés VAPID : `php artisan
+push:cles-vapid`, à copier dans le `.env`) ; la cloche de la barre du haut abonne l'APPAREIL, pas un
+écran. Ce qui sonne n'est pas un geste mais le calendrier (`Alertes`, tâche `alertes:envoyer` à
+8 h 11) : factures dépassées et abonnements qui s'achèvent sous 14 jours — une notification par jour
+et par sujet, qui compte, jamais une par facture, et sans montant (elle s'affiche écran verrouillé).
+L'écran de démarrage est une image par taille d'iPhone/iPad (`public/icons/demarrage/`, liens
+`apple-touch-startup-image`) plus un écran dans la page pour l'application installée seulement,
+retiré dès que Vue est monté. *Piège de poste* : `composer` ne peut pas télécharger depuis GitHub
+dans la session distante ; les paquets du produit ont été copiés dans `vendor/` et déclarés dans
+`installed.json` — un `composer install` normal, chez toi, n'y change rien.
+
+**Vendables depuis la demande de l'utilisateur** : `vision.evenements` et `vision.commissions`
+(65 modules / 58 vendables). L'offre Vision Standard les porte, comme `antenne.inventaire` et
+`extension.inventaire` dans les offres Standard des étages du dessous.
