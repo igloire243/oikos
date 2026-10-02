@@ -9,6 +9,7 @@ use App\Models\Offre;
 use App\Models\Paiement;
 use App\Models\User;
 use Database\Seeders\OffreSeeder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -116,11 +117,21 @@ it('rappelle l\'installation après chaque mouvement, sans jamais faire échouer
 });
 
 it('numérote les factures à la suite, et repart de 1 chaque année', function () {
-    $deuxieme = Facturation::emettre($this->periode, $this->operateur);
-    expect($deuxieme->numero)->toBe('FAC-2026-00002');
+    // Une facture par période (index unique) : on en vend deux de plus.
+    $autre = fn (string $debut) => $this->periode->abonnement->periodes()->create([
+        'offre_id' => $this->periode->offre_id, 'debut' => $debut, 'fin' => Carbon::parse($debut)->addYear()->subDay(),
+        'montant_centimes' => 1000, 'devise' => 'USD', 'au_prorata' => false,
+    ]);
+
+    expect(Facturation::emettre($autre('2028-01-01'), $this->operateur)->numero)->toBe('FAC-2026-00002');
 
     Carbon::setTestNow('2027-01-05 10:00:00');
-    expect(Facturation::emettre($this->periode, $this->operateur)->numero)->toBe('FAC-2027-00001');
+    expect(Facturation::emettre($autre('2029-01-01'), $this->operateur)->numero)->toBe('FAC-2027-00001');
+});
+
+it('refuse une seconde facture pour la même période', function () {
+    expect(fn () => Facturation::emettre($this->periode, $this->operateur))
+        ->toThrow(UniqueConstraintViolationException::class);
 });
 
 it('liste les factures, filtre celles en retard et additionne le dû par devise', function () {
