@@ -273,3 +273,20 @@ l'ancienne console : la Vision à la racine, ses antennes en sous-dossiers, leur
 (`Composants/Console/NoeudEntite.vue`, récursif, deux premiers étages ouverts, nombre d'éléments
 affiché une fois plié). Une église dont l'antenne n'a pas été remontée reste visible, dans un dossier
 « Églises sans antenne » : la cacher ferait disparaître quelqu'un à qui l'on vend peut-être déjà.
+
+**Le lot C4 est livré — le quotidien de l'opérateur.** `console.demandes.index` : ce que laissent les
+visiteurs du formulaire public (`/demande`, seule porte publique de la console avec l'API machine —
+champs bornés, cinq envois par minute, champ piège qui renvoie un faux succès aux robots sans rien
+enregistrer) ; les plus anciennes non traitées d'abord, courriel et téléphone en liens nus, « traitée »
+avec une note — on ne supprime pas une demande. `console.reglages.index` : les quatre durées de la
+licence (essai, grâce, silence toléré, validité d'une clé), **en base** (`reglages`, une ligne par
+durée, repli sur `config/oikos.php`) et lues par `EtatLicence`, `Abonnement` et `Cles` via
+`Reglages::valeur()` — le même principe que les paramètres du produit : un réglage n'entre ici que si
+une règle livrée le lit, et l'écran dit où il agit. `console.journal.index` : en lecture seule, filtré
+par type, sans purge ni export (comme celui du produit). L'accueil montre d'abord **« À traiter »**,
+qui reprend exactement les calculs de la notification du matin (`Alertes`) plus les installations
+silencieuses : le tableau de bord ne dit jamais autre chose que ce que le téléphone a sonné.
+
+*Reste du site commercial* : seul le formulaire de demande existe. Une vitrine complète (offres
+publiques, tarifs, présentation) est à décider avec l'utilisateur — elle ne peut pas se construire sans
+savoir ce qu'on y promet.

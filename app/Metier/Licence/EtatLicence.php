@@ -4,6 +4,7 @@ namespace App\Metier\Licence;
 
 use App\Metier\Catalogue\Modules;
 use App\Metier\Commerce\Ventes;
+use App\Metier\Console\Reglages;
 use App\Models\Abonnement;
 use App\Models\Entite;
 use App\Models\Installation;
@@ -43,7 +44,7 @@ class EtatLicence
     {
         $maintenant ??= Carbon::now();
         $aujourdhui = $maintenant->copy()->startOfDay();
-        $grace = (int) config('oikos.grace_jours', 14);
+        $grace = Reglages::valeur('grace_jours');
 
         $abonnements = $installation->abonnements()
             ->whereNull('resilie_le')
@@ -87,7 +88,7 @@ class EtatLicence
             'offre' => $offre?->code,
             'fin' => $fin,
             'grace_jours' => $grace,
-            'silence_jours' => (int) config('oikos.silence_jours', 45),
+            'silence_jours' => Reglages::valeur('silence_jours'),
 
             // L'empreinte du catalogue au nom duquel on répond : le produit compare avec la sienne
             // et peut dire qu'une mise à jour manque, d'un côté ou de l'autre.
@@ -137,7 +138,7 @@ class EtatLicence
             }
         }
 
-        $finEssai = ($installation->activee_le ?? $aujourdhui)->copy()->addDays((int) config('oikos.essai_jours', 30))->startOfDay();
+        $finEssai = ($installation->activee_le ?? $aujourdhui)->copy()->addDays(Reglages::valeur('essai_jours'))->startOfDay();
 
         if (! $licenceVendue && $aujourdhui->lte($finEssai)) {
             return [self::ESSAI, $finEssai->toDateString(), null];

@@ -2,6 +2,7 @@
 
 namespace App\Metier\Licence;
 
+use App\Metier\Console\Reglages;
 use App\Metier\Journal\Journal;
 use App\Models\CleActivation;
 use App\Models\Installation;
@@ -38,7 +39,7 @@ class Cles
             'installation_id' => $installation->id,
             'code_hash' => self::hacher($code),
             'code_apercu' => substr($code, 0, 11).'…',
-            'expire_le' => Carbon::now()->addDays($joursValidite ?? (int) config('oikos.cle_validite_jours', 30)),
+            'expire_le' => Carbon::now()->addDays($joursValidite ?? Reglages::valeur('cle_validite_jours')),
             'note' => $note,
             'emise_par_id' => $par?->id,
         ]);

@@ -57,7 +57,7 @@ final class Alertes
         return ['retards' => $retards, 'echeances' => $echeances];
     }
 
-    private static function facturesEnRetard(Carbon $jour): int
+    public static function facturesEnRetard(Carbon $jour): int
     {
         // L'état se DÉRIVE des paiements reçus (jamais stocké) : on charge donc les candidats
         // échus et on laisse `enRetard()` trancher, plutôt que de recopier la règle en SQL.
@@ -69,7 +69,7 @@ final class Alertes
             ->count();
     }
 
-    private static function abonnementsQuiSAchevent(Carbon $jour): int
+    public static function abonnementsQuiSAchevent(Carbon $jour): int
     {
         $limite = $jour->copy()->addDays(self::PREAVIS_JOURS);
 

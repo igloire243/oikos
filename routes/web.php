@@ -3,10 +3,14 @@
 use App\Http\Controllers\AbonnementsController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\ClientsController;
+use App\Http\Controllers\DemandePubliqueController;
+use App\Http\Controllers\DemandesController;
 use App\Http\Controllers\FacturesController;
 use App\Http\Controllers\InstallationsController;
+use App\Http\Controllers\JournalController;
 use App\Http\Controllers\OffresController;
 use App\Http\Controllers\PushController;
+use App\Http\Controllers\ReglagesController;
 use App\Http\Controllers\TableauDeBordController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +26,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::redirect('/', '/console');
+
+// La seule porte publique de la console avec l'API machine : un formulaire borné et freiné.
+Route::get('/demande', [DemandePubliqueController::class, 'formulaire'])->name('demande.formulaire');
+Route::post('/demande', [DemandePubliqueController::class, 'envoyer'])->middleware('throttle:5,1')->name('demande.envoyer');
 
 Route::prefix('console')->group(function () {
     // Le profil de Jetstream (mot de passe, double authentification, sessions), sous /console.
@@ -68,6 +76,12 @@ Route::prefix('console')->group(function () {
             });
             Route::patch('/paiements/{paiement}/non-recu', [FacturesController::class, 'nonRecu'])->name('paiements.non_recu');
             Route::patch('/paiements/{paiement}/retablissement', [FacturesController::class, 'retablir'])->name('paiements.retablir');
+
+            Route::get('/demandes', [DemandesController::class, 'index'])->name('demandes.index');
+            Route::patch('/demandes/{demande}/traitement', [DemandesController::class, 'traiter'])->name('demandes.traiter');
+            Route::get('/reglages', [ReglagesController::class, 'index'])->name('reglages.index');
+            Route::put('/reglages', [ReglagesController::class, 'update'])->name('reglages.update');
+            Route::get('/journal', [JournalController::class, 'index'])->name('journal.index');
 
             // Vendre se fait sur une ENTITÉ, jamais sur un client en bloc.
             Route::get('/entites/{entite}/vente', [AbonnementsController::class, 'apercu'])->name('ventes.apercu');

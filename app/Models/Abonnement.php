@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Metier\Console\Reglages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -93,7 +94,7 @@ class Abonnement extends Model
             $derniere === null => self::ECHU,
             $this->periodeAu($jour) !== null => self::EN_COURS,
             $this->periodes->every(fn (PeriodeAbonnement $p) => $p->debut->gt($jour)) => self::A_VENIR,
-            $jour->lte($derniere->fin->copy()->addDays((int) config('oikos.grace_jours', 14))) => self::EN_GRACE,
+            $jour->lte($derniere->fin->copy()->addDays(Reglages::valeur('grace_jours'))) => self::EN_GRACE,
             default => self::ECHU,
         };
     }
