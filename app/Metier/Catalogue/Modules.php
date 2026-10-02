@@ -28,7 +28,7 @@ class Modules
 {
     public const FICHIER = 'catalogue/modules.json';
 
-    /** @var array{empreinte: string, espaces: array<string, array{libelle: string, groupes?: array<string, string>, modules: array<string, array{libelle: string, icone: string, vendable: bool, groupe?: string}>}>}|null */
+    /** @var array{empreinte: string, espaces: array<string, array{libelle: string, groupes?: array<string, string>, modules: array<string, array{libelle: string, icone: string, vendable: bool, groupe?: string}>}>, inclus?: array<string, array{libelle: string, ouvert_par: string|null, modules: array<string, array{libelle: string, icone: string}>}>}|null */
     private static ?array $document = null;
 
     /** @return array<string, array{libelle: string, groupes?: array<string, string>, modules: array<string, array{libelle: string, icone: string, vendable: bool, groupe?: string}>}> */
@@ -108,13 +108,26 @@ class Modules
         return hash('sha256', implode("\n", $cles));
     }
 
+    /**
+     * Ce que le produit contient SANS le vendre à part : les écrans de « Mon Église » (ouverts par
+     * la seule clé `extension.espace_membre`) et ce qui vit dans tous les espaces — la Bible, la
+     * recherche, les notifications. Listés pour qu'on sache tout ce qui existe ; hors empreinte,
+     * puisqu'aucune licence ne les ouvre ni ne les ferme un par un.
+     *
+     * @return array<string, array{libelle: string, ouvert_par: string|null, modules: array<string, array{libelle: string, icone: string}>}>
+     */
+    public static function inclus(): array
+    {
+        return self::document()['inclus'] ?? [];
+    }
+
     /** Pour les tests : relire le fichier au prochain appel. */
     public static function oublier(): void
     {
         self::$document = null;
     }
 
-    /** @return array{empreinte: string, espaces: array<string, array{libelle: string, groupes?: array<string, string>, modules: array<string, array{libelle: string, icone: string, vendable: bool, groupe?: string}>}>} */
+    /** @return array{empreinte: string, espaces: array<string, array{libelle: string, groupes?: array<string, string>, modules: array<string, array{libelle: string, icone: string, vendable: bool, groupe?: string}>}>, inclus?: array<string, array{libelle: string, ouvert_par: string|null, modules: array<string, array{libelle: string, icone: string}>}>} */
     private static function document(): array
     {
         if (self::$document !== null) {

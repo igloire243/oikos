@@ -13,6 +13,7 @@ defineProps({
     espaces: { type: Array, required: true },
     empreinte: { type: String, required: true },
     vendables: { type: Number, required: true },
+    inclus: { type: Array, default: () => [] },
 });
 </script>
 
@@ -68,6 +69,39 @@ defineProps({
                         <Badge :ton="module.vendable ? 'marque' : 'ardoise'">
                             {{ module.vendable ? 'vendable' : 'toujours ouvert' }}
                         </Badge>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Ce qui existe sans se vendre à part : on le voit, on ne le coche pas. -->
+            <section
+                v-for="groupe in inclus"
+                :key="groupe.cle"
+                class="overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white"
+            >
+                <header class="border-b border-slate-100 px-5 py-3">
+                    <h2 class="font-semibold text-slate-800">{{ groupe.libelle }}</h2>
+                    <p class="text-xs text-slate-500">
+                        <template v-if="groupe.ouvert_par"
+                            >Inclus : tout s'ouvre d'un bloc avec {{ groupe.ouvert_par }}.</template
+                        >
+                        <template v-else>Inclus dans chaque espace, sans clé à vendre.</template>
+                    </p>
+                </header>
+                <ul class="divide-y divide-slate-100">
+                    <li
+                        v-for="module in groupe.modules"
+                        :key="module.cle"
+                        class="flex min-w-0 items-center gap-3 px-5 py-3"
+                    >
+                        <component
+                            :is="icone(module.icone)"
+                            class="h-4 w-4 shrink-0 text-slate-400"
+                        />
+                        <p class="min-w-0 flex-1 truncate text-sm text-slate-800">
+                            {{ module.libelle }}
+                        </p>
+                        <Badge ton="ardoise">inclus</Badge>
                     </li>
                 </ul>
             </section>

@@ -56,8 +56,12 @@ rien n'ouvre, ou ouvert que rien ne facture. Ici le fichier porte une **empreint
 clés triées) : un test vérifie qu'elle correspond à ses clés — une copie retouchée se trahit — et
 chaque installation annoncera l'empreinte de son propre catalogue à la synchronisation (Lot C1).
 
-**64 modules, 4 espaces, 51 vendables** — les mêmes chiffres que le produit, verrouillés par
-`tests/Feature/Catalogue/CatalogueTest.php`.
+**64 modules, 4 espaces, 55 vendables** — les mêmes chiffres que le produit, verrouillés par
+`tests/Feature/Catalogue/CatalogueTest.php`. Le fichier porte aussi une liste `inclus` — les écrans
+de « Mon Église » (ouverts d'un bloc par `extension.espace_membre`) et ce qui vit dans tous les
+espaces (la Bible, la recherche, les notifications) : affichés sur l'écran Catalogue pour qu'on sache
+tout ce qui existe, **hors empreinte**, puisque aucune licence ne les ouvre un par un. Le fichier se
+régénère côté produit par `php artisan modules:exporter --vers=<chemin de ce fichier>`.
 
 ### 3. À reprendre de l'ancienne console, et à corriger (lots suivants)
 

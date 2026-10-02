@@ -17,18 +17,18 @@ use Illuminate\Database\Seeder;
  */
 class OffreSeeder extends Seeder
 {
-    private const VISION_STARTER = ['vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports', 'vision.communications'];
+    private const VISION_STARTER = ['vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports', 'vision.communications', 'vision.messagerie'];
 
     private const VISION_STANDARD = [...self::VISION_STARTER, 'vision.membres', 'vision.medias', 'vision.finances', 'vision.export'];
 
-    private const ANTENNE_STARTER = ['antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports', 'antenne.services', 'antenne.communications'];
+    private const ANTENNE_STARTER = ['antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports', 'antenne.services', 'antenne.communications', 'antenne.messagerie'];
 
-    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export'];
+    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export', 'antenne.delegations'];
 
     private const EGLISE_STARTER = [
         'extension.membres', 'extension.cultes', 'extension.tresorerie', 'extension.rapports', 'extension.equipes',
         'extension.messagerie', 'extension.espace_membre',
-        'departement.equipe', 'departement.plannings', 'departement.rapports',
+        'departement.equipe', 'departement.plannings', 'departement.rapports', 'departement.messagerie',
     ];
 
     private const EGLISE_STANDARD = [

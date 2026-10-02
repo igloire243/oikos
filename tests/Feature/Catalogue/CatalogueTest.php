@@ -9,10 +9,10 @@ use App\Metier\Catalogue\Modules;
  * S'ils bougent ici sans bouger là-bas, c'est que quelqu'un a édité la copie au lieu de la
  * réexporter : exactement l'écart qui ferait vendre un module que rien n'ouvre.
  */
-it('porte les 64 modules du produit, dont 51 vendables, sur 4 espaces', function () {
+it('porte les 64 modules du produit, dont 55 vendables, sur 4 espaces', function () {
     expect(Modules::espaces())->toHaveCount(4)
         ->and(Modules::toutes())->toHaveCount(64)
-        ->and(Modules::vendables())->toHaveCount(51);
+        ->and(Modules::vendables())->toHaveCount(55);
 });
 
 it('a une empreinte qui correspond à ses clés — un fichier retouché à la main se trahit', function () {
@@ -33,5 +33,16 @@ it('porte les quatre clés ajoutées pendant la Grande Convention', function () 
 
     expect(Modules::estVendable('vision.commissions'))->toBeFalse()
         ->and(Modules::estVendable('extension.inventaire'))->toBeTrue()
-        ->and(Modules::estVendable('antenne.delegations'))->toBeFalse();
+        // Vendable depuis que l'utilisateur l'a demandé, comme la messagerie de chaque espace.
+        ->and(Modules::estVendable('antenne.delegations'))->toBeTrue()
+        ->and(Modules::estVendable('vision.messagerie'))->toBeTrue();
+});
+
+it('liste ce qui existe sans se vendre : Mon Église et la Bible', function () {
+    $inclus = Modules::inclus();
+
+    expect($inclus['membre']['ouvert_par'])->toBe('extension.espace_membre')
+        ->and($inclus['partout']['modules'])->toHaveKey('bible')
+        // Hors empreinte : rien ici n'est ouvert ou fermé par une licence.
+        ->and(Modules::calculerEmpreinte())->toBe(Modules::empreinte());
 });

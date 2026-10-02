@@ -43,6 +43,12 @@ class CatalogueController extends Controller
             'espaces' => $espaces,
             'empreinte' => Modules::empreinte(),
             'vendables' => count(Modules::vendables()),
+            'inclus' => collect(Modules::inclus())->map(fn (array $groupe, string $cle) => [
+                'cle' => $cle,
+                'libelle' => $groupe['libelle'],
+                'ouvert_par' => $groupe['ouvert_par'] ? Modules::libelle($groupe['ouvert_par']).' ('.$groupe['ouvert_par'].')' : null,
+                'modules' => collect($groupe['modules'])->map(fn (array $m, string $c) => ['cle' => $c, ...$m])->values(),
+            ])->values(),
         ]);
     }
 }

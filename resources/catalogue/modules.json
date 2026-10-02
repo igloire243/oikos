@@ -80,7 +80,7 @@
                 "messagerie": {
                     "libelle": "Messagerie interne",
                     "icone": "messages-square",
-                    "vendable": false
+                    "vendable": true
                 },
                 "parametres": {
                     "libelle": "Configuration générale et site public",
@@ -169,7 +169,7 @@
                 "delegations": {
                     "libelle": "Délégations aux événements",
                     "icone": "bus",
-                    "vendable": false
+                    "vendable": true
                 },
                 "inventaire": {
                     "libelle": "Inventaire du matériel",
@@ -213,7 +213,7 @@
                 "messagerie": {
                     "libelle": "Messagerie interne",
                     "icone": "messages-square",
-                    "vendable": false
+                    "vendable": true
                 },
                 "parametres": {
                     "libelle": "Paramètres de l'antenne",
@@ -367,12 +367,94 @@
                 "messagerie": {
                     "libelle": "Messagerie interne",
                     "icone": "messages-square",
-                    "vendable": false
+                    "vendable": true
                 },
                 "comptes": {
                     "libelle": "Gestion des comptes",
                     "icone": "user-cog",
                     "vendable": false
+                }
+            }
+        }
+    },
+    "inclus": {
+        "membre": {
+            "libelle": "Mon Église — l'espace des fidèles",
+            "ouvert_par": "extension.espace_membre",
+            "modules": {
+                "fiche": {
+                    "libelle": "Ma fiche",
+                    "icone": "id-card"
+                },
+                "parcours": {
+                    "libelle": "Mon parcours",
+                    "icone": "route"
+                },
+                "presences": {
+                    "libelle": "Mes présences",
+                    "icone": "calendar-check"
+                },
+                "programmes": {
+                    "libelle": "Programmes",
+                    "icone": "calendar-days"
+                },
+                "annonces": {
+                    "libelle": "Annonces",
+                    "icone": "megaphone"
+                },
+                "pastoral": {
+                    "libelle": "Prière et visites",
+                    "icone": "hand-heart"
+                },
+                "enfants": {
+                    "libelle": "Mes enfants",
+                    "icone": "users-round"
+                },
+                "carte": {
+                    "libelle": "Ma carte",
+                    "icone": "id-card"
+                },
+                "cotisations": {
+                    "libelle": "Mes cotisations",
+                    "icone": "wallet"
+                },
+                "annuaire": {
+                    "libelle": "Annuaire des serviteurs",
+                    "icone": "users"
+                },
+                "commission": {
+                    "libelle": "Ma commission",
+                    "icone": "handshake"
+                },
+                "transfert": {
+                    "libelle": "Demande de transfert",
+                    "icone": "arrow-left-right"
+                },
+                "medias": {
+                    "libelle": "Médias",
+                    "icone": "image"
+                },
+                "messagerie": {
+                    "libelle": "Messagerie",
+                    "icone": "messages-square"
+                }
+            }
+        },
+        "partout": {
+            "libelle": "Dans tous les espaces",
+            "ouvert_par": null,
+            "modules": {
+                "bible": {
+                    "libelle": "La Bible — sept traductions, hors ligne, plans de lecture, lecture audio",
+                    "icone": "book-open"
+                },
+                "recherche": {
+                    "libelle": "Recherche globale",
+                    "icone": "search"
+                },
+                "notifications": {
+                    "libelle": "Notifications sur le téléphone",
+                    "icone": "bell"
                 }
             }
         }
