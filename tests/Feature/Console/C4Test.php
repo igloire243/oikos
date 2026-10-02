@@ -8,6 +8,7 @@ use App\Models\EntreeJournal;
 use App\Models\Installation;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
@@ -154,4 +155,22 @@ it('dit « tout est à jour » quand rien n\'attend, et compte ce qui attend sin
         ->assertInertia(fn (Assert $page) => $page
             ->where('a_traiter.0.cle', 'demandes')
             ->where('chiffres.clients', 1));
+});
+
+it('retombe sur les valeurs de départ quand la table des réglages n\'existe pas encore', function () {
+    // Une console mise à jour mais pas encore migrée : un 500 partout serait pire que servir, le temps
+    // de migrer, les durées de `config/oikos.php`.
+    Schema::drop('reglages');
+
+    expect(Reglages::valeur('grace_jours'))->toBe((int) config('oikos.grace_jours'));
+});
+
+it('mène un opérateur connecté à sa console, et un visiteur au formulaire de connexion', function () {
+    $this->get('/')->assertInertia(fn (Assert $page) => $page->where('auth.user', null));
+    $this->get(route('login'))->assertOk();
+
+    // Connecté, la page de connexion renvoie au tableau de bord : le lien de la vitrine doit le savoir.
+    $this->actingAs($this->operateur);
+    $this->get('/')->assertInertia(fn (Assert $page) => $page->where('auth.user.id', $this->operateur->id));
+    $this->get(route('login'))->assertRedirect();
 });

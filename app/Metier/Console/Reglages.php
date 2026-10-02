@@ -7,6 +7,7 @@ use App\Models\Reglage;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * LES RÉGLAGES DE LA CONSOLE — et la règle qui décide de ce qu'on y met.
@@ -112,7 +113,17 @@ final class Reglages
     {
         // Une lecture par requête : `Abonnement::etat()` est appelée par dizaines sur une liste.
         if (! app()->bound('oikos.reglages')) {
-            app()->instance('oikos.reglages', Reglage::query()->pluck('valeur', 'cle')->map(fn ($v) => (int) $v)->all());
+            try {
+                $valeurs = Reglage::query()->pluck('valeur', 'cle')->map(fn ($v) => (int) $v)->all();
+            } catch (Throwable) {
+                // La table n'existe pas encore : une console mise à jour mais pas encore migrée. Ces
+                // durées commandent l'émission d'une clé, la licence servie, l'état d'un abonnement —
+                // un 500 partout pour une migration oubliée serait pire que de servir, le temps de
+                // migrer, les valeurs de départ de `config/oikos.php`.
+                $valeurs = [];
+            }
+
+            app()->instance('oikos.reglages', $valeurs);
         }
 
         return app('oikos.reglages');

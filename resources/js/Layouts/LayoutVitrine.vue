@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { LogIn, Menu as MenuIcone, X } from 'lucide-vue-next';
 
@@ -17,6 +17,13 @@ defineProps({
 });
 
 const page = usePage();
+
+// Un opérateur déjà connecté ne revoit pas le formulaire : `/console/login` le renvoie à son tableau
+// de bord, et un lien « Connexion » qui ne montre rien ressemble à un lien cassé. Il lit donc
+// « Ma console », et mène là où il va vraiment.
+const connecte = computed(() => page.props.auth?.user != null);
+const lienConsole = computed(() => (connecte.value ? route('console.accueil') : route('login')));
+const libelleConsole = computed(() => (connecte.value ? 'Ma console' : 'Connexion'));
 const menuOuvert = ref(false);
 router.on('navigate', () => (menuOuvert.value = false));
 
@@ -53,10 +60,10 @@ const actif = (nom) => route().current(nom);
 
                 <div class="ml-auto flex items-center gap-2">
                     <Link
-                        :href="route('login')"
+                        :href="lienConsole"
                         class="max-sm:!hidden inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium text-slate-600 hover:bg-slate-100"
                     >
-                        <LogIn class="h-4 w-4" /> Connexion
+                        <LogIn class="h-4 w-4" /> {{ libelleConsole }}
                     </Link>
                     <Link
                         :href="route('demande.formulaire')"
@@ -87,10 +94,10 @@ const actif = (nom) => route().current(nom);
                     {{ lien.libelle }}
                 </Link>
                 <Link
-                    :href="route('login')"
+                    :href="lienConsole"
                     class="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
                 >
-                    <LogIn class="h-4 w-4" /> Connexion des opérateurs
+                    <LogIn class="h-4 w-4" /> {{ connecte ? 'Ma console' : 'Connexion des opérateurs' }}
                 </Link>
             </nav>
         </header>
@@ -106,7 +113,7 @@ const actif = (nom) => route().current(nom);
                     <p class="flex flex-wrap gap-x-4 gap-y-1">
                         <Link :href="route('vitrine.tarifs')" class="hover:text-slate-800">Tarifs</Link>
                         <Link :href="route('demande.formulaire')" class="hover:text-slate-800">Demander une offre</Link>
-                        <Link :href="route('login')" class="hover:text-slate-800">Connexion des opérateurs</Link>
+                        <Link :href="lienConsole" class="hover:text-slate-800">{{ connecte ? 'Ma console' : 'Connexion des opérateurs' }}</Link>
                     </p>
                 </div>
             </footer>
