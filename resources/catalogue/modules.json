@@ -1,10 +1,11 @@
 {
-    "empreinte": "117cfbf0e0c4b4350c3f20ef571aab8f6198a063478ea7d4d1384e2eaf29e42f",
+    "empreinte": "f31c95c174750964a1c5553215e680e95c868a34b1b1e54a423b0c7d4fc56143",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
             "groupes": {
                 "reseau": "Implantations de la Vision",
+                "gouvernance": "Gouvernance",
                 "securite": "Paramètres & Sécurité"
             },
             "modules": {
@@ -77,6 +78,12 @@
                     "icone": "handshake",
                     "vendable": true
                 },
+                "comite": {
+                    "libelle": "Comité exécutif",
+                    "icone": "landmark",
+                    "vendable": true,
+                    "groupe": "gouvernance"
+                },
                 "messagerie": {
                     "libelle": "Messagerie interne",
                     "icone": "messages-square",
@@ -87,6 +94,12 @@
                     "icone": "receipt",
                     "vendable": false,
                     "groupe": "securite"
+                },
+                "delegues": {
+                    "libelle": "Délégués de la Vision",
+                    "icone": "user-cog",
+                    "vendable": false,
+                    "groupe": "gouvernance"
                 },
                 "parametres": {
                     "libelle": "Configuration générale et site public",
@@ -111,7 +124,7 @@
             },
             "modules": {
                 "extensions": {
-                    "libelle": "Églises rattachées",
+                    "libelle": "Secteurs et cellules",
                     "icone": "church",
                     "vendable": true,
                     "groupe": "reseau"

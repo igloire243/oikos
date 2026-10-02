@@ -398,3 +398,6 @@ période a déjà commencé, si un trou ou une autre période s'intercale, ou si
 `Installations::remettreALEssai()` (bouton « Remettre à l'essai », motif obligatoire) résilie les abonnements en cours
 — jamais effacés, une facture non soldée reste due — et pose `installations.essai_relance_le` : `EtatLicence` compte
 l'essai depuis cette date et ignore une licence résiliée jusqu'à elle ; une licence vendue ensuite reprend la main.
+
+**Catalogue : 70 modules / 59 vendables (R5 du produit).** `vision.comite` (vendable, offre Standard) et
+`vision.delegues` (non vendable) ajoutés ; `catalogue/modules.json` régénéré par `modules:exporter`.
