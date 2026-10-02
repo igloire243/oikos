@@ -316,3 +316,11 @@ dans le menu, et le bouton d'action se raccourcit (« Nous écrire »).
 `.env`, sans rien générer. `oikos:cles-signature` n'affiche la publique qu'à la fabrication et refuse
 d'en refaire une tant qu'il en existe une (une nouvelle paire invaliderait toutes les licences posées) :
 perdre sa sortie ne perd donc pas la clé, elle se déduit de la privée.
+
+**Le périmètre de l'application installée englobe le site public.** Le manifeste portait `scope:
+/console` : le bouton « Site public » de la barre du haut mène à `/`, hors périmètre, et iOS ouvrait
+alors la page dans une vue Safari — barre d'adresse et boutons compris, c'est-à-dire la mise en page
+d'une page web ordinaire au lieu de celle d'une application. Le périmètre est maintenant `/` ; le
+lancement reste sur `/console` (`start_url`). *À savoir* : un téléphone garde le manifeste lu à
+l'installation — il faut retirer l'application de l'écran d'accueil et la réinstaller pour que le
+nouveau périmètre s'applique.

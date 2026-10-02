@@ -56,3 +56,15 @@ it("a une image de démarrage pour chaque taille d'iPhone et d'iPad déclarée",
         expect(public_path("icons/demarrage/{$taille}.png"))->toBeFile();
     }
 });
+
+it('garde le site public DANS le périmètre de l\'application installée', function () {
+    $manifeste = json_decode(file_get_contents(public_path('manifest.webmanifest')), true);
+
+    // Le bouton « Site public » de la console mène à `/`. Avec un périmètre limité à `/console`, iOS
+    // sort de l'application et ouvre la page dans une vue Safari — barre d'adresse et boutons compris,
+    // la mise en page d'une page web ordinaire au lieu de celle d'une application (signalé à l'usage).
+    expect($manifeste['scope'])->toBe('/')
+        ->and($manifeste['start_url'])->toStartWith($manifeste['scope'])
+        // On ouvre toujours la console, jamais la vitrine, quand on lance l'application.
+        ->and($manifeste['start_url'])->toBe('/console');
+});

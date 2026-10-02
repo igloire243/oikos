@@ -5,7 +5,7 @@
     "description": "La console de gestion des clients, des licences et des abonnements des églises.",
     "lang": "fr",
     "start_url": "/console",
-    "scope": "/console",
+    "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#ffffff",
