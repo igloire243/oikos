@@ -123,25 +123,30 @@ body::-webkit-scrollbar,
 }
 
 /*
- * LA COULEUR DE LA CONSOLE — un violet que ne porte aucun des cinq espaces du produit.
+ * LA COULEUR DE LA CONSOLE — le vert de WhatsApp (demandé : « pas le violet »).
  *
  * Les composants viennent du produit, qui teint chaque espace par des variables `--marque-*`
  * plutôt que par des classes composées à l'exécution (Tailwind ne génère que ce qu'il lit). Ils
  * les lisent donc ici aussi. Posées sur `:root` et non sur la mise en page : une modale est
  * téléportée dans <body>, hors du conteneur, et une variable absente ne peint rien — le bouton
  * principal d'une modale serait du texte blanc sur un fond qui n'existe pas.
+ *
+ * Les trois verts de la marque WhatsApp tiennent aux rangs 400 (#25D366), 600 (#128C7E) et
+ * 800 (#075E54). Le 500 est un cran plus profond que le vert vif : `.marque-fond` pose du texte
+ * BLANC dessus (boutons), et blanc sur #25D366 ne fait que 2:1 — illisible sur un téléphone en
+ * plein soleil. Le vert vif reste pour ce qui n'a pas de texte dessus (accents, icône).
  */
 :root {
-    --marque-50: #f5f3ff;
-    --marque-100: #ede9fe;
-    --marque-200: #ddd6fe;
-    --marque-300: #c4b5fd;
-    --marque-400: #a78bfa;
-    --marque-500: #8b5cf6;
-    --marque-600: #7c3aed;
-    --marque-700: #6d28d9;
-    --marque-800: #5b21b6;
-    --marque-900: #4c1d95;
+    --marque-50: #e8faf0;
+    --marque-100: #cdf3de;
+    --marque-200: #9ee7bf;
+    --marque-300: #63d79a;
+    --marque-400: #25d366;
+    --marque-500: #17a05a;
+    --marque-600: #128c7e;
+    --marque-700: #0e7468;
+    --marque-800: #075e54;
+    --marque-900: #054a42;
 }
 
 .marque-fond {

@@ -208,3 +208,18 @@ Ce qu'ils tiennent, et que les tests verrouillent :
 - **Pas de quotas** : l'ancienne en vendait que le produit n'appliquait pas.
 
 **63 tests.**
+
+## La PWA et la couleur
+
+**Vert WhatsApp**, par les variables `--marque-*` de `resources/css/app.css` (400 `#25D366`, 600
+`#128C7E`, 800 `#075E54`). Le rang 500 est volontairement un cran plus profond : `.marque-fond` pose
+du texte BLANC dessus, et blanc sur `#25D366` ne fait que 2:1. Les composants Jetstream écrits en
+`indigo` suivent la même palette (`tailwind.config.js`) au lieu de rester violets.
+
+**Application installable** : `public/manifest.webmanifest` (cible `/console`, la racine reviendra
+au site commercial), `public/sw.js`, `public/hors-ligne.html`, icônes dans `public/icons/` (SVG
+sources `icone*.svg`, PNG rendus par Chromium, `favicon.ico` assemblé à la main). Le service worker
+ne garde que `/build/` : **jamais une page** — une licence échue lue depuis un cache mentirait, et
+resterait lisible sur un téléphone prêté. Le bouton « Installer » (`Composables/installation.js`)
+n'apparaît que si le navigateur émet `beforeinstallprompt`. `tests/Feature/PwaTest.php` vérifie que
+chaque icône du manifeste existe : sinon le navigateur ne propose rien, sans erreur visible.

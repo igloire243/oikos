@@ -4,7 +4,19 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-        <meta name="theme-color" content="#ffffff">
+        <meta name="theme-color" content="#128C7E">
+
+        {{-- PWA : manifeste, icônes et couleur. Sans manifeste valide et sans service worker, le
+             navigateur ne propose pas d'installer l'application. Le fond de l'icône iOS est plein :
+             Safari noircit la transparence. --}}
+        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icons/favicon-32.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Oikos">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
         {{-- La console n'a rien à faire dans un moteur de recherche. --}}
         <meta name="robots" content="noindex, nofollow">
 
@@ -19,5 +31,10 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+            }
+        </script>
     </body>
 </html>

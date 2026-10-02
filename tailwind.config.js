@@ -28,6 +28,17 @@ export default {
 
     theme: {
         extend: {
+            // Les composants Jetstream (profil, authentification) sont écrits en `indigo` : ils
+            // suivent la couleur de la console au lieu de rester violets au milieu d'un écran vert.
+            colors: {
+                indigo: Object.fromEntries(
+                    [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((rang) => [
+                        rang,
+                        `var(--marque-${rang})`,
+                    ])
+                ),
+            },
+
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },

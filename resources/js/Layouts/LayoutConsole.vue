@@ -1,8 +1,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { CircleUserRound, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
+import { CircleUserRound, Download, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
 import { icone } from '@/Composants/icones.js';
+import { useInstallation } from '@/Composables/installation';
 
 /**
  * LA MISE EN PAGE DE LA CONSOLE — la même grammaire que les espaces du produit, en plus court.
@@ -39,6 +40,8 @@ const barreDuBas = computed(() =>
 );
 
 const seDeconnecter = () => router.post(route('logout'));
+
+const { invite: peutInstaller, installer } = useInstallation();
 </script>
 
 <template>
@@ -163,6 +166,16 @@ const seDeconnecter = () => router.post(route('logout'));
                 </h1>
 
                 <div class="ml-auto flex items-center gap-1">
+                    <button
+                        v-if="peutInstaller"
+                        type="button"
+                        class="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-medium text-[color:var(--marque-700)] hover:bg-[color:var(--marque-50)]"
+                        title="Installer l'application"
+                        @click="installer"
+                    >
+                        <Download class="h-5 w-5" />
+                        <span class="hidden sm:inline">Installer</span>
+                    </button>
                     <Link
                         :href="route('profile.show')"
                         class="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
