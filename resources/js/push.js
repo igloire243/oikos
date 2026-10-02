@@ -22,14 +22,38 @@ function versUint8Array(base64Url) {
     return Uint8Array.from([...brut].map((caractere) => caractere.charCodeAt(0)));
 }
 
+/**
+ * POURQUOI LES NOTIFICATIONS NE MARCHENT PAS ICI — ou null quand elles marchent.
+ *
+ * La cloche restait CACHÉE dès qu'une condition manquait, sans un mot : une personne qui cherchait où
+ * les activer n'avait aucun moyen de savoir si c'était son navigateur, son adresse ou le serveur. On
+ * dit désormais laquelle, dans l'ordre où l'on peut agir dessus.
+ */
+export function pushRaison() {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        return "Ce navigateur ne sait pas recevoir de notifications.";
+    }
+
+    // Une adresse `http://` hors localhost n'est pas une origine sécurisée : le navigateur retire
+    // alors le service worker et l'abonnement, quoi qu'on fasse.
+    if (!window.isSecureContext) {
+        return "Les notifications exigent une adresse sécurisée (https, ou localhost). Ouverte depuis une adresse en http://192.168…, cette page ne peut pas les activer.";
+    }
+
+    if (!('PushManager' in window)) {
+        return "Ce navigateur ne sait pas recevoir de notifications. Sur iPhone, installez d'abord l'application sur l'écran d'accueil (Partager, puis « Sur l'écran d'accueil »).";
+    }
+
+    if (clePubliqueVapid() === null) {
+        return "Les notifications ne sont pas encore activées sur ce serveur : l'administrateur doit poser les clés d'envoi (php artisan push:cles-vapid, puis les copier dans le .env).";
+    }
+
+    return null;
+}
+
 /** Le navigateur sait-il faire, ET le serveur a-t-il posé ses clés VAPID ? */
 export function pushSupporte() {
-    return (
-        typeof window !== 'undefined' &&
-        'serviceWorker' in navigator &&
-        'PushManager' in window &&
-        clePubliqueVapid() !== null
-    );
+    return pushRaison() === null;
 }
 
 export async function pushActif() {

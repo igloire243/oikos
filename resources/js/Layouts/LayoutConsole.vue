@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Bell, BellOff, CircleUserRound, Download, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
+import { Bell, BellOff, CircleUserRound, Download, Globe, LogOut, Menu as MenuIcone, X } from 'lucide-vue-next';
 import { icone } from '@/Composants/icones.js';
 import { useInstallation } from '@/Composables/installation';
-import { activerPush, desactiverPush, pushActif, pushSupporte } from '@/push.js';
+import { activerPush, desactiverPush, pushActif, pushRaison, pushSupporte } from '@/push.js';
 
 /**
  * LA MISE EN PAGE DE LA CONSOLE — la même grammaire que les espaces du produit, en plus court.
@@ -47,6 +47,7 @@ const { invite: peutInstaller, installer } = useInstallation();
 // Un réglage de l'APPAREIL : la cloche n'existe que si le navigateur ET le serveur savent faire
 // (clé VAPID posée), et reflète l'abonnement réel du navigateur — jamais un état deviné.
 const pushDisponible = pushSupporte();
+const pushExplication = ref(null);
 const pushActifIci = ref(false);
 const pushEnCours = ref(false);
 
@@ -56,6 +57,13 @@ if (pushDisponible) {
 
 const basculerPush = async () => {
     if (pushEnCours.value) {
+        return;
+    }
+
+    // Indisponible : on DIT pourquoi, au lieu de cacher la cloche et de laisser chercher.
+    if (!pushDisponible) {
+        pushExplication.value = pushExplication.value ? null : pushRaison();
+
         return;
     }
 
@@ -207,21 +215,42 @@ const basculerPush = async () => {
                 </h1>
 
                 <div class="ml-auto flex items-center gap-1">
-                    <button
-                        v-if="pushDisponible"
-                        type="button"
-                        class="rounded-xl p-2 hover:bg-slate-100"
-                        :class="[
-                            pushActifIci ? 'text-[color:var(--marque-700)]' : 'text-slate-400',
-                            pushEnCours ? 'opacity-50' : '',
-                        ]"
-                        :disabled="pushEnCours"
-                        :title="pushActifIci ? 'Notifications activées — cliquer pour couper' : 'Activer les notifications'"
-                        @click="basculerPush"
+                    <div class="relative">
+                        <button
+                            type="button"
+                            class="rounded-xl p-2 hover:bg-slate-100"
+                            :class="[
+                                pushDisponible && pushActifIci ? 'text-[color:var(--marque-700)]' : pushDisponible ? 'text-slate-400' : 'text-slate-300',
+                                pushEnCours ? 'opacity-50' : '',
+                            ]"
+                            :disabled="pushEnCours"
+                            :title="!pushDisponible ? 'Notifications indisponibles — voir pourquoi' : pushActifIci ? 'Notifications activées — cliquer pour couper' : 'Activer les notifications'"
+                            @click="basculerPush"
+                        >
+                            <span class="sr-only">Notifications</span>
+                            <component :is="pushActifIci ? Bell : BellOff" class="h-5 w-5" />
+                        </button>
+                        <div
+                            v-if="pushExplication"
+                            class="absolute right-0 top-full z-50 mt-2 w-72 max-w-[85vw] rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-700 shadow-lg"
+                            role="status"
+                        >
+                            {{ pushExplication }}
+                            <button type="button" class="mt-2 block font-semibold text-slate-900 underline" @click="pushExplication = null">
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Le site public : un opérateur y va pour voir ce que voit un visiteur — les tarifs, le
+                         formulaire de demande. -->
+                    <Link
+                        :href="route('vitrine.accueil')"
+                        class="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                        title="Voir le site public"
                     >
-                        <span class="sr-only">Notifications</span>
-                        <component :is="pushActifIci ? Bell : BellOff" class="h-5 w-5" />
-                    </button>
+                        <Globe class="h-5 w-5" />
+                        <span class="hidden sm:inline">Site public</span>
+                    </Link>
                     <button
                         v-if="peutInstaller"
                         type="button"

@@ -1,5 +1,5 @@
 {
-    "empreinte": "7b665d35ed4543fa9f89e7e4e5cfed52d977ca9554c2fbffb1d1459ea76bfa33",
+    "empreinte": "117cfbf0e0c4b4350c3f20ef571aab8f6198a063478ea7d4d1384e2eaf29e42f",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -81,6 +81,12 @@
                     "libelle": "Messagerie interne",
                     "icone": "messages-square",
                     "vendable": true
+                },
+                "abonnement": {
+                    "libelle": "Mon abonnement",
+                    "icone": "receipt",
+                    "vendable": false,
+                    "groupe": "securite"
                 },
                 "parametres": {
                     "libelle": "Configuration générale et site public",
@@ -215,6 +221,11 @@
                     "icone": "messages-square",
                     "vendable": true
                 },
+                "abonnement": {
+                    "libelle": "Mon abonnement",
+                    "icone": "receipt",
+                    "vendable": false
+                },
                 "parametres": {
                     "libelle": "Paramètres de l'antenne",
                     "icone": "settings",
@@ -331,6 +342,11 @@
                 "comptes": {
                     "libelle": "Gestion des comptes",
                     "icone": "user-cog",
+                    "vendable": false
+                },
+                "abonnement": {
+                    "libelle": "Mon abonnement",
+                    "icone": "receipt",
                     "vendable": false
                 },
                 "parametres": {
