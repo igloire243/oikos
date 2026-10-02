@@ -311,3 +311,8 @@ défile, pied de page dans la zone) : aucun défilement de fenêtre à 390 px. L
 recherche : c'est `routeIs('vitrine.*', 'demande.*')` qui décide, dans `app.blade.php`.
 *Piège de mise en page* : sur téléphone, l'en-tête n'a la place que d'un bouton — « Connexion » passe
 dans le menu, et le bouton d'action se raccourcit (« Nous écrire »).
+
+**`php artisan oikos:cle-publique`** — retrouve la clé publique d'une clé privée déjà posée dans le
+`.env`, sans rien générer. `oikos:cles-signature` n'affiche la publique qu'à la fabrication et refuse
+d'en refaire une tant qu'il en existe une (une nouvelle paire invaliderait toutes les licences posées) :
+perdre sa sortie ne perd donc pas la clé, elle se déduit de la privée.

@@ -127,3 +127,15 @@ it('signe pareil une liste d\'entités vide, qu\'elle soit un objet ou un tablea
 
     expect(Signature::message([...$base, 'entites' => (object) []]))->toBe(Signature::message([...$base, 'entites' => []]));
 });
+
+it('retrouve la clé publique d\'une clé privée déjà posée, sans rien générer', function () {
+    $paire = Signature::fabriquerLesCles();
+    config(['oikos.licence_cle_privee' => $paire['privee']]);
+
+    expect(Signature::clePubliqueDeduite())->toBe($paire['publique']);
+
+    $this->artisan('oikos:cle-publique')->expectsOutputToContain($paire['publique'])->assertSuccessful();
+
+    config(['oikos.licence_cle_privee' => null]);
+    $this->artisan('oikos:cle-publique')->assertFailed();
+});

@@ -287,6 +287,24 @@ class Signature
         }
     }
 
+    /**
+     * La clé publique (base64, sur une ligne) déduite de la clé privée configurée — ou null.
+     * La paire se retrouve : la publique n'a pas à être gardée à part.
+     */
+    public static function clePubliqueDeduite(): ?string
+    {
+        $privee = self::clePrivee();
+
+        if ($privee === null) {
+            return null;
+        }
+
+        $ressource = @openssl_pkey_get_private($privee);
+        $details = $ressource === false ? false : openssl_pkey_get_details($ressource);
+
+        return is_array($details) && isset($details['key']) ? base64_encode($details['key']) : null;
+    }
+
     /** La clé privée, en PEM, décodée depuis le .env. Null si absente ou illisible. */
     private static function clePrivee(): ?string
     {
