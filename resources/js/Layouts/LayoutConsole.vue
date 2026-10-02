@@ -45,7 +45,14 @@ const { invite: peutInstaller, installer } = useInstallation();
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-50">
+    <!-- SUR TÉLÉPHONE, LA PAGE NE DÉFILE PAS : c'est la zone du milieu, entre l'en-tête et la barre du
+         bas. Le défilement de la FENÊTRE est un indicateur que le système peint par-dessus les
+         barres fixes — sur toute la hauteur de l'écran, et presque pleine quand la page ne dépasse
+         que de quelques pixels (`min-h-screen` + marges). Aucun CSS ne le masque ; seul un
+         conteneur qui défile lui-même (`scroll-region`, que le CSS peut taire) en est exempt. -->
+    <div
+        class="min-h-screen bg-slate-50 max-lg:flex max-lg:h-[100dvh] max-lg:min-h-0 max-lg:flex-col max-lg:overflow-hidden"
+    >
         <Head :title="titre" />
 
         <transition
@@ -148,9 +155,9 @@ const { invite: peutInstaller, installer } = useInstallation();
         </aside>
 
         <!-- ===================== Contenu ===================== -->
-        <div class="lg:pl-64">
+        <div class="max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col lg:pl-64">
             <header
-                class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6"
+                class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6"
             >
                 <button
                     type="button"
@@ -200,7 +207,10 @@ const { invite: peutInstaller, installer } = useInstallation();
                 </div>
             </header>
 
-            <main class="px-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pb-12 lg:pt-6">
+            <main
+                scroll-region
+                class="defilement-discret px-4 pb-6 pt-4 max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overscroll-contain sm:px-6 lg:px-8 lg:pb-12 lg:pt-6"
+            >
                 <div v-if="!messagesMasques" class="space-y-2">
                     <div
                         v-for="(message, ton) in {
@@ -235,7 +245,7 @@ const { invite: peutInstaller, installer } = useInstallation();
 
         <!-- ===================== Barre du bas (téléphone) ===================== -->
         <nav
-            class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+            class="z-40 shrink-0 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
         >
             <ul class="grid grid-cols-4">
                 <li v-for="entree in barreDuBas" :key="entree.cle">

@@ -11,7 +11,10 @@ it('sert un manifeste valide dont chaque icône existe', function () {
 
     expect($manifeste['name'])->not->toBeEmpty()
         ->and($manifeste['display'])->toBe('standalone')
-        ->and($manifeste['start_url'])->toBe('/console');
+        ->and($manifeste['start_url'])->toBe('/console')
+        // Blanc, comme le produit : une couleur de thème verte peignait une bande verte sous
+        // l'heure et la batterie, par-dessus l'écran.
+        ->and($manifeste['theme_color'])->toBe('#ffffff');
 
     $tailles = [];
     foreach ($manifeste['icons'] as $icone) {

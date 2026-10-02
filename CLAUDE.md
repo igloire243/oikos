@@ -223,3 +223,16 @@ ne garde que `/build/` : **jamais une page** — une licence échue lue depuis u
 resterait lisible sur un téléphone prêté. Le bouton « Installer » (`Composables/installation.js`)
 n'apparaît que si le navigateur émet `beforeinstallprompt`. `tests/Feature/PwaTest.php` vérifie que
 chaque icône du manifeste existe : sinon le navigateur ne propose rien, sans erreur visible.
+
+**La page ne défile pas sur téléphone, le milieu défile.** Sur la capture d'un iPhone, une barre de
+défilement grise courait sur toute la hauteur de l'écran, par-dessus l'en-tête et la barre du bas.
+C'est l'indicateur de la FENÊTRE : le système le peint au-dessus des barres fixes, aucun CSS ne le
+masque, et il paraît presque plein quand la page ne dépasse que de quelques pixels. Sous `lg`,
+`LayoutConsole` est donc une colonne de la hauteur de l'écran (`100dvh`) — en-tête, zone qui défile
+(`main[scroll-region]`, que le CSS sait taire), barre du bas. Le défilement-fenêtre vaut 0 ; Inertia
+remet la zone en haut à chaque page grâce à `scroll-region`.
+
+**Couleur de thème blanche**, comme le produit : verte, elle peignait une bande verte sous l'heure et
+la batterie, par-dessus l'écran. **Données à jour au retour arrière** : `resources/js/fraicheur.js`,
+le même module que le produit (Inertia réaffiche sinon les données gardées dans l'historique).
+

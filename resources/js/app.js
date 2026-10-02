@@ -4,6 +4,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import { garderLesDonneesAJour } from './fraicheur';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Oikos Console';
 
@@ -27,6 +28,10 @@ createInertiaApp({
     resolve: (name) =>
         resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
+        // Au retour arrière, Inertia réaffiche les données gardées dans l'historique : un client ou
+        // une facture modifiés sur l'écran suivant restaient périmés (voir fraicheur.js).
+        garderLesDonneesAJour();
+
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
