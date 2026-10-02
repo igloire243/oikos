@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Metier\Commerce\Facturation;
 use App\Metier\Commerce\Montant;
+use App\Metier\Commerce\PaiementsEnLigne;
 use App\Models\Facture;
 use App\Models\Paiement;
 use Illuminate\Http\RedirectResponse;
@@ -128,6 +129,7 @@ class FacturesController extends Controller
             'recu' => Montant::formater($f->recuCentimes(), $f->devise),
             'restant' => Montant::formater($f->restantCentimes(), $f->devise),
             'restant_saisie' => Montant::enUnites($f->restantCentimes(), $f->devise),
+            'lien_paiement' => PaiementsEnLigne::lienPour($f),
             'etat' => $f->etat(),
             'etat_libelle' => Facture::ETATS[$f->etat()],
             'en_retard' => $f->enRetard(),

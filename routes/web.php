@@ -9,6 +9,7 @@ use App\Http\Controllers\FacturesController;
 use App\Http\Controllers\InstallationsController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\OffresController;
+use App\Http\Controllers\PaiementPublicController;
 use App\Http\Controllers\PushController;
 use App\Http\Controllers\ReglagesController;
 use App\Http\Controllers\TableauDeBordController;
@@ -32,6 +33,17 @@ Route::get('/tarifs', [VitrineController::class, 'tarifs'])->name('vitrine.tarif
 
 // La seule porte publique de la console avec l'API machine : un formulaire borné et freiné.
 Route::get('/demande', [DemandePubliqueController::class, 'formulaire'])->name('demande.formulaire');
+
+// Payer en ligne — éteint par défaut (PAIEMENT_EN_LIGNE) : chaque route répond 404 tant qu'il l'est.
+Route::prefix('payer')->group(function () {
+    Route::get('/retour/{reference}', [PaiementPublicController::class, 'retour'])->name('paiement.retour');
+    Route::post('/notification/{passerelle}', [PaiementPublicController::class, 'notification'])->middleware('throttle:60,1')->name('paiement.notification');
+    Route::get('/simulation/{reference}', [PaiementPublicController::class, 'simulation'])->name('paiement.simulation');
+    Route::post('/simulation/{reference}', [PaiementPublicController::class, 'simuler'])->name('paiement.simuler');
+    Route::get('/{jeton}', [PaiementPublicController::class, 'afficher'])->middleware('throttle:30,1')->name('paiement.afficher');
+    Route::post('/{jeton}', [PaiementPublicController::class, 'demarrer'])->middleware('throttle:10,1')->name('paiement.demarrer');
+});
+
 Route::post('/demande', [DemandePubliqueController::class, 'envoyer'])->middleware('throttle:5,1')->name('demande.envoyer');
 
 Route::prefix('console')->group(function () {

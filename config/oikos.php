@@ -23,4 +23,8 @@ return [
 
     // La durée de vie d'une clé d'activation non utilisée.
     'cle_validite_jours' => (int) env('OIKOS_CLE_VALIDITE_JOURS', 30),
+
+    // Payer en ligne : éteint tant qu'un fournisseur réel n'est pas branché (PaiementsEnLigne).
+    'paiement_en_ligne' => (bool) env('PAIEMENT_EN_LIGNE', false),
+    'passerelle_paiement' => env('PASSERELLE_PAIEMENT', 'simulee'),
 ];

@@ -60,6 +60,15 @@ const ton = (f) => (f.etat === 'SOLDEE' ? 'succes' : f.en_retard ? 'danger' : f.
 /* --- Les versements d'une facture, dépliés à la demande ------------------------------------- */
 
 const depliees = ref(new Set());
+const copierLeLien = async (lien) => {
+    try {
+        await navigator.clipboard.writeText(lien);
+    } catch {
+        // Sans presse-papiers (http hors localhost) : on montre l'adresse, à copier à la main.
+        window.prompt('Adresse de paiement à envoyer au client :', lien);
+    }
+};
+
 const basculer = (id) => {
     const suite = new Set(depliees.value);
     suite.has(id) ? suite.delete(id) : suite.add(id);
@@ -204,6 +213,15 @@ const retablir = (paiement) =>
                     <Bouton v-if="f.etat !== 'SOLDEE'" :icone="Banknote" compact @click="encaisser(f)">
                         Encaisser
                     </Bouton>
+                    <!-- L'adresse que le client reçoit : visible seulement quand le paiement en ligne est allumé. -->
+                    <button
+                        v-if="f.lien_paiement && f.etat !== 'SOLDEE'"
+                        type="button"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                        @click="copierLeLien(f.lien_paiement)"
+                    >
+                        Copier le lien de paiement
+                    </button>
                     <button
                         v-if="f.paiements.length"
                         type="button"

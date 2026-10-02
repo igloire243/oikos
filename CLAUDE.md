@@ -324,3 +324,26 @@ d'une page web ordinaire au lieu de celle d'une application. Le périmètre est 
 lancement reste sur `/console` (`start_url`). *À savoir* : un téléphone garde le manifeste lu à
 l'installation — il faut retirer l'application de l'écran d'accueil et la réinstaller pour que le
 nouveau périmètre s'applique.
+
+---
+
+## C5 — Payer en ligne (éteint par défaut)
+
+`PAIEMENT_EN_LIGNE=true` l'allume ; éteint, chaque route `/payer/*` répond 404 et aucun lien n'est montré.
+
+- **Le fournisseur confirme, le navigateur ne prouve rien.** `PaiementsEnLigne::confirmer()` INTERROGE le
+  fournisseur (`Passerelle::verifier()`), vérifie montant et devise, puis encaisse par
+  `Facturation::encaisser()` — la seule porte vers `paiements`, moyen `EN_LIGNE`. Le retour du client, la
+  notification du fournisseur (`POST /payer/notification/{passerelle}`, hors CSRF) et un rechargement
+  arrivent dans n'importe quel ordre : c'est idempotent (la référence du fournisseur est unique).
+- **Une tentative n'est pas un paiement** : `demandes_paiement`, écrite avant de partir chez le fournisseur.
+  Payé alors que la facture ne peut plus recevoir (soldée entre-temps) → demande ÉCHOUÉE « à rembourser » et
+  trace au journal (`PAIEMENT_EN_LIGNE_A_REMBOURSER`) : de l'argent à rendre ne se tait pas.
+- **L'adresse publique porte `factures.jeton_paiement`**, tiré au hasard — jamais le numéro, qui se devine.
+  Elle paie TOUT le reste dû ; un versement partiel reste une saisie à la main.
+- **Brancher un vrai fournisseur = UNE classe** implémentant `Passerelles\Passerelle` (`initier`, `verifier`)
+  et une ligne dans `PaiementsEnLigne::passerelle()`. `PasserelleSimulee` (page de simulation) est
+  **interdite en production**. Aucun fournisseur réel n'est branché : il manque le choix et les clés d'essai.
+- L'écran Factures offre « Copier le lien de paiement » quand l'option est allumée.
+
+**123 tests.**

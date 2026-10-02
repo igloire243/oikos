@@ -30,6 +30,7 @@ class Paiement extends Model
     public const MOYENS = [
         'ESPECES' => 'Espèces',
         'MOBILE_MONEY' => 'Mobile money',
+        'EN_LIGNE' => 'Paiement en ligne',
         'VIREMENT' => 'Virement bancaire',
         'CHEQUE' => 'Chèque',
         'AUTRE' => 'Autre',

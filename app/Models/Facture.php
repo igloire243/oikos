@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $numero
+ * @property string|null $jeton_paiement
  * @property int $periode_abonnement_id
  * @property int $montant_centimes
  * @property string $devise
@@ -47,7 +48,7 @@ class Facture extends Model
     public const DELAI_JOURS = 15;
 
     /** @var list<string> */
-    protected $fillable = ['numero', 'periode_abonnement_id', 'montant_centimes', 'devise', 'emise_le', 'echeance_le', 'emise_par_id'];
+    protected $fillable = ['numero', 'periode_abonnement_id', 'montant_centimes', 'devise', 'emise_le', 'echeance_le', 'emise_par_id', 'jeton_paiement'];
 
     /** @var array<string, string> */
     protected $casts = [

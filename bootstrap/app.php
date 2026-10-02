@@ -22,7 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // La notification d'un fournisseur de paiement vient de SON serveur, sans notre jeton CSRF :
+        // c'est l'interrogation directe du fournisseur (confirmer) qui fait foi, pas ce corps de requête.
+        $middleware->validateCsrfTokens(except: ['payer/notification/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -33,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // lien mort ou un écran refusé tombait sur la page nue du framework, en anglais, sans logo ni
         // bouton pour revenir. Le statut HTTP ne change pas ; en local, une 500 garde la trace
         // détaillée, qui sert à corriger. Les requêtes JSON (l'API des installations) gardent du JSON.
-        $exceptions->respond(function (Response $reponse, \Throwable $erreur, Request $requete) {
+        $exceptions->respond(function (Response $reponse, Throwable $erreur, Request $requete) {
             $statut = $reponse->getStatusCode();
 
             if ($requete->expectsJson() || $requete->is('api/*')) {

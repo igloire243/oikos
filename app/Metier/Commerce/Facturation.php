@@ -10,6 +10,7 @@ use App\Models\PeriodeAbonnement;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -48,6 +49,7 @@ class Facturation
 
         return Facture::query()->create([
             'numero' => sprintf('FAC-%d-%05d', $annee, $suite),
+            'jeton_paiement' => Str::random(32),
             'periode_abonnement_id' => $periode->id,
             'montant_centimes' => $periode->montant_centimes,
             'devise' => $periode->devise,
