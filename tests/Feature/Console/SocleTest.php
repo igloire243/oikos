@@ -42,7 +42,7 @@ it('ouvre l\'accueil et le catalogue à un opérateur, avec le menu partagé', f
     $this->actingAs($operateur)->get('/console')
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('Console/Accueil')
-            ->where('catalogue.modules', 77)
+            ->where('catalogue.modules', 78)
             ->where('menu.0.entrees.0.route', 'console.accueil'));
 
     // Une entrée sans écran reste au menu, sans lien : « à venir ».

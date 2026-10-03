@@ -1,5 +1,5 @@
 {
-    "empreinte": "09639c0ed5520d90ceda02f478c0a2162611f22e8b70e466864ec554c8cb74fb",
+    "empreinte": "abb6fd53247042d805caf4c1cccddd5ea9b32e5f839eed175cc7d268c2121def",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -240,6 +240,12 @@
                 "trimestre": {
                     "libelle": "Rapport trimestriel",
                     "icone": "clipboard-list",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "missions": {
+                    "libelle": "Missions de l'antenne",
+                    "icone": "send",
                     "vendable": true,
                     "groupe": "bilans"
                 },
@@ -504,6 +510,10 @@
                 "transfert": {
                     "libelle": "Demande de transfert",
                     "icone": "arrow-left-right"
+                },
+                "consultations": {
+                    "libelle": "Consulter les documents",
+                    "icone": "file-text"
                 },
                 "medias": {
                     "libelle": "Médias",
