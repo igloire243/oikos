@@ -36,6 +36,16 @@ it('crée un opérateur par la commande, et refuse un mot de passe trop court', 
     expect(User::query()->where('email', 'op@oikos.test')->value('name'))->toBe('Opératrice');
 });
 
+it('crée un opérateur sans terminal, avec le mot de passe en option', function () {
+    $this->artisan('oikos:operateur', ['email' => 'cron@oikos.test', '--nom' => 'Cron', '--mot-de-passe' => 'un-mot-de-passe-solide'])
+        ->assertSuccessful();
+
+    expect(User::query()->where('email', 'cron@oikos.test')->exists())->toBeTrue();
+
+    $this->artisan('oikos:operateur', ['email' => 'court@oikos.test', '--nom' => 'Court', '--mot-de-passe' => 'court'])
+        ->assertFailed();
+});
+
 it('ouvre l\'accueil et le catalogue à un opérateur, avec le menu partagé', function () {
     $operateur = User::factory()->create();
 
