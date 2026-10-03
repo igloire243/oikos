@@ -11,7 +11,7 @@ it('sert un manifeste valide dont chaque icône existe', function () {
 
     expect($manifeste['name'])->not->toBeEmpty()
         ->and($manifeste['display'])->toBe('standalone')
-        ->and($manifeste['start_url'])->toBe('/console')
+        ->and($manifeste['start_url'])->toBe('/')
         // Blanc, comme le produit : une couleur de thème verte peignait une bande verte sous
         // l'heure et la batterie, par-dessus l'écran.
         ->and($manifeste['theme_color'])->toBe('#ffffff');
@@ -65,6 +65,9 @@ it('garde le site public DANS le périmètre de l\'application installée', func
     // la mise en page d'une page web ordinaire au lieu de celle d'une application (signalé à l'usage).
     expect($manifeste['scope'])->toBe('/')
         ->and($manifeste['start_url'])->toStartWith($manifeste['scope'])
-        // On ouvre toujours la console, jamais la vitrine, quand on lance l'application.
-        ->and($manifeste['start_url'])->toBe('/console');
+        // L'application s'ouvre sur le site public (demande de l'éditeur : on la montre à un client depuis le
+        // téléphone) ; la connexion est un lien de la vitrine. `id` reste `/console` : le changer ferait passer
+        // l'application déjà installée pour une AUTRE, qu'il faudrait réinstaller.
+        ->and($manifeste['start_url'])->toBe('/')
+        ->and($manifeste['id'])->toBe('/console');
 });
