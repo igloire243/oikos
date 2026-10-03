@@ -1,5 +1,5 @@
 {
-    "empreinte": "969c975edf486311486e485199b7a8117471681cade675de12bf358b49e259d0",
+    "empreinte": "65bb246d4276ea8a6ec54144945f426db5204cf4880d4ae6b729fe2f9f5c1684",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -231,6 +231,12 @@
                     "vendable": true,
                     "groupe": "bilans"
                 },
+                "programme_annuel": {
+                    "libelle": "Programmes annuels des églises",
+                    "icone": "calendar-range",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
                 "dossiers": {
                     "libelle": "Dossiers disciplinaires des cadres",
                     "icone": "folder-lock",
@@ -322,6 +328,11 @@
                 },
                 "activites": {
                     "libelle": "Calendrier annuel des activités",
+                    "icone": "calendar-range",
+                    "vendable": true
+                },
+                "programme_annuel": {
+                    "libelle": "Programme annuel",
                     "icone": "calendar-range",
                     "vendable": true
                 },

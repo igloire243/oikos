@@ -9,10 +9,10 @@ use App\Metier\Catalogue\Modules;
  * S'ils bougent ici sans bouger là-bas, c'est que quelqu'un a édité la copie au lieu de la
  * réexporter : exactement l'écart qui ferait vendre un module que rien n'ouvre.
  */
-it('porte les 73 modules du produit, dont 62 vendables, sur 4 espaces', function () {
+it('porte les 75 modules du produit, dont 64 vendables, sur 4 espaces', function () {
     expect(Modules::espaces())->toHaveCount(4)
-        ->and(Modules::toutes())->toHaveCount(73)
-        ->and(Modules::vendables())->toHaveCount(62);
+        ->and(Modules::toutes())->toHaveCount(75)
+        ->and(Modules::vendables())->toHaveCount(64);
 });
 
 it('a une empreinte qui correspond à ses clés — un fichier retouché à la main se trahit', function () {
