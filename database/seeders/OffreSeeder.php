@@ -23,7 +23,7 @@ class OffreSeeder extends Seeder
 
     private const ANTENNE_STARTER = ['antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports', 'antenne.services', 'antenne.communications', 'antenne.messagerie'];
 
-    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export', 'antenne.delegations', 'antenne.inventaire'];
+    private const ANTENNE_STANDARD = [...self::ANTENNE_STARTER, 'antenne.prieres', 'antenne.visites', 'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias', 'antenne.formations', 'antenne.export', 'antenne.delegations', 'antenne.inventaire', 'antenne.trimestre'];
 
     private const EGLISE_STARTER = [
         'extension.membres', 'extension.cultes', 'extension.tresorerie', 'extension.rapports', 'extension.equipes',

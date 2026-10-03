@@ -1,5 +1,5 @@
 {
-    "empreinte": "d6a3eb57420ce906b92c6a3862c5b005b05385b19daaf33f4a3db9efe7460f03",
+    "empreinte": "72e457e9c188f52e5f8043f9c65151a6172ed7d082182697e988b1fcc101533f",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -216,6 +216,12 @@
                 "reunions": {
                     "libelle": "Réunions mensuelles",
                     "icone": "users-round",
+                    "vendable": true,
+                    "groupe": "bilans"
+                },
+                "trimestre": {
+                    "libelle": "Rapport trimestriel",
+                    "icone": "clipboard-list",
                     "vendable": true,
                     "groupe": "bilans"
                 },
