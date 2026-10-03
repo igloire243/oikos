@@ -55,7 +55,10 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => '',
+            // Un hébergement mutualisé n'offre parfois qu'UNE base : la console y cohabite alors avec le produit,
+            // dont les tables portent les mêmes noms (users, sessions, migrations…). Un préfixe sépare les deux ;
+            // le constructeur de requêtes et le schéma l'appliquent seuls, aucune requête brute ne cite de table.
+            'prefix' => env('DB_PREFIX', ''),
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
