@@ -402,4 +402,6 @@ l'essai depuis cette date et ignore une licence résiliée jusqu'à elle ; une l
 **Catalogue : 78 modules / 67 vendables (R5-R7 du produit : `antenne.missions`, `vision.missions`, `vision.projets`, `vision.comite`, `vision.assemblee`, `antenne.trimestre`, `vision.bilan_annuel`, `extension.programme_annuel`, `antenne.programme_annuel`).** `vision.comite` (vendable, offre Standard) et
 `vision.delegues` (non vendable) ajoutés ; `catalogue/modules.json` régénéré par `modules:exporter`.
 
+**L'application installée s'ouvre sur le site public** (`manifest.webmanifest`, `start_url` = `/`), avec son lien « Connexion » ; `id` reste `/console` pour ne pas créer une seconde application chez ceux qui l'ont déjà installée.
+
 **Préfixe de tables (`DB_PREFIX`).** Sur un hébergement mutualisé à une seule base, la console, le produit (`mgj_`) et le site voisin partagent la même base ; la console prend `cs_`. Aucune requête brute ne cite de table ici, donc le préfixe est sûr ; la suite passe aussi avec `DB_PREFIX=cs_`.

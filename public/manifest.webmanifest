@@ -4,7 +4,7 @@
     "short_name": "Oikos",
     "description": "La console de gestion des clients, des licences et des abonnements des églises.",
     "lang": "fr",
-    "start_url": "/console",
+    "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
