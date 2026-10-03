@@ -1,5 +1,5 @@
 {
-    "empreinte": "65bb246d4276ea8a6ec54144945f426db5204cf4880d4ae6b729fe2f9f5c1684",
+    "empreinte": "09639c0ed5520d90ceda02f478c0a2162611f22e8b70e466864ec554c8cb74fb",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -93,6 +93,18 @@
                 "bilan_annuel": {
                     "libelle": "Rapport financier annuel",
                     "icone": "wallet",
+                    "vendable": true,
+                    "groupe": "gouvernance"
+                },
+                "missions": {
+                    "libelle": "Missions et implantations",
+                    "icone": "send",
+                    "vendable": true,
+                    "groupe": "gouvernance"
+                },
+                "projets": {
+                    "libelle": "Projets",
+                    "icone": "lightbulb",
                     "vendable": true,
                     "groupe": "gouvernance"
                 },
