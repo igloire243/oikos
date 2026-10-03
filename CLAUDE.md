@@ -399,5 +399,5 @@ période a déjà commencé, si un trou ou une autre période s'intercale, ou si
 — jamais effacés, une facture non soldée reste due — et pose `installations.essai_relance_le` : `EtatLicence` compte
 l'essai depuis cette date et ignore une licence résiliée jusqu'à elle ; une licence vendue ensuite reprend la main.
 
-**Catalogue : 72 modules / 61 vendables (R5 du produit ; `vision.assemblee` en R5b, `antenne.trimestre` en R6a).** `vision.comite` (vendable, offre Standard) et
+**Catalogue : 73 modules / 62 vendables (R5-R6 du produit : `vision.comite`, `vision.assemblee`, `antenne.trimestre`, `vision.bilan_annuel`).** `vision.comite` (vendable, offre Standard) et
 `vision.delegues` (non vendable) ajoutés ; `catalogue/modules.json` régénéré par `modules:exporter`.
