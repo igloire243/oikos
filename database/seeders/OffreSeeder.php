@@ -19,7 +19,7 @@ class OffreSeeder extends Seeder
 {
     private const VISION_STARTER = ['vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports', 'vision.communications', 'vision.messagerie'];
 
-    private const VISION_STANDARD = [...self::VISION_STARTER, 'vision.membres', 'vision.medias', 'vision.finances', 'vision.export', 'vision.evenements', 'vision.commissions', 'vision.comite'];
+    private const VISION_STANDARD = [...self::VISION_STARTER, 'vision.membres', 'vision.medias', 'vision.finances', 'vision.export', 'vision.evenements', 'vision.commissions', 'vision.comite', 'vision.assemblee'];
 
     private const ANTENNE_STARTER = ['antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports', 'antenne.services', 'antenne.communications', 'antenne.messagerie'];
 

@@ -1,5 +1,5 @@
 {
-    "empreinte": "f31c95c174750964a1c5553215e680e95c868a34b1b1e54a423b0c7d4fc56143",
+    "empreinte": "d6a3eb57420ce906b92c6a3862c5b005b05385b19daaf33f4a3db9efe7460f03",
     "espaces": {
         "vision": {
             "libelle": "Espace de la Vision",
@@ -81,6 +81,12 @@
                 "comite": {
                     "libelle": "Comité exécutif",
                     "icone": "landmark",
+                    "vendable": true,
+                    "groupe": "gouvernance"
+                },
+                "assemblee": {
+                    "libelle": "Assemblée, réunions et résolutions",
+                    "icone": "scale",
                     "vendable": true,
                     "groupe": "gouvernance"
                 },
