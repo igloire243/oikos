@@ -15,7 +15,7 @@
                     "vendable": true
                 },
                 "entites": {
-                    "libelle": "Antennes, extensions, départements",
+                    "libelle": "Antennes, entités, départements",
                     "icone": "network",
                     "vendable": true,
                     "groupe": "reseau"
@@ -184,7 +184,7 @@
                     "groupe": "pastoral"
                 },
                 "visites": {
-                    "libelle": "Visites d'extensions",
+                    "libelle": "Visites d'entités",
                     "icone": "route",
                     "vendable": true,
                     "groupe": "pastoral"
@@ -250,7 +250,7 @@
                     "groupe": "bilans"
                 },
                 "programme_annuel": {
-                    "libelle": "Programmes annuels des églises",
+                    "libelle": "Programmes annuels des entités",
                     "icone": "calendar-range",
                     "vendable": true,
                     "groupe": "bilans"
@@ -355,7 +355,7 @@
                     "vendable": true
                 },
                 "discipulariat": {
-                    "libelle": "Baptêmes",
+                    "libelle": "Écoles et baptêmes",
                     "icone": "droplets",
                     "vendable": true
                 },
@@ -385,12 +385,12 @@
                     "vendable": true
                 },
                 "rapports": {
-                    "libelle": "Rapports de l'extension",
+                    "libelle": "Rapports de l'entité",
                     "icone": "bar-chart-3",
                     "vendable": true
                 },
                 "medias": {
-                    "libelle": "Médias de l'extension",
+                    "libelle": "Médias de l'entité",
                     "icone": "image",
                     "vendable": true
                 },
@@ -410,7 +410,7 @@
                     "vendable": false
                 },
                 "parametres": {
-                    "libelle": "Paramètres de l'extension",
+                    "libelle": "Paramètres de l'entité",
                     "icone": "settings",
                     "vendable": false
                 }
@@ -502,6 +502,14 @@
                 "annuaire": {
                     "libelle": "Annuaire des serviteurs",
                     "icone": "users"
+                },
+                "taches": {
+                    "libelle": "Mes tâches",
+                    "icone": "list-checks"
+                },
+                "visites": {
+                    "libelle": "Mes visites",
+                    "icone": "hand-helping"
                 },
                 "commission": {
                     "libelle": "Ma commission",
