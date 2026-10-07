@@ -59,7 +59,8 @@ self.addEventListener('fetch', (evenement) => {
         return;
     }
 
-    if (url.pathname.startsWith('/build/')) {
+    // Les routes (`/ziggy.js?v=…`) : l'adresse porte la version, donc une copie gardée est forcément la bonne.
+    if (url.pathname.startsWith('/build/') || url.pathname === '/ziggy.js') {
         evenement.respondWith(
             caches.open(CACHE_BUILD).then(async (cache) => {
                 const gardee = await cache.match(requete);

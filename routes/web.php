@@ -14,7 +14,11 @@ use App\Http\Controllers\PushController;
 use App\Http\Controllers\ReglagesController;
 use App\Http\Controllers\TableauDeBordController;
 use App\Http\Controllers\VitrineController;
+use App\Http\Controllers\ZiggyController;
 use Illuminate\Support\Facades\Route;
+
+// Sans session ni cookie : c'est un fichier qu'on veut mettre en cache (voir ZiggyController).
+Route::get('/ziggy.js', ZiggyController::class)->name('ziggy.js')->withoutMiddleware('web');
 
 /*
 |--------------------------------------------------------------------------

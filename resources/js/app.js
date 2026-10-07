@@ -3,7 +3,12 @@ import '../css/app.css';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import { route, ZiggyVue } from '../../vendor/tightenco/ziggy';
+
+// `route()` est aussi appelée telle quelle dans les scripts des pages (pas seulement dans les gabarits). Elle venait du
+// script inline de `@routes` ; les routes étant désormais servies par `/ziggy.js`, la fonction n'était plus définie et
+// TOUT appel depuis un script (connexion comprise) échouait avec « route is not defined ».
+window.route = route;
 import { garderLesDonneesAJour } from './fraicheur';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Oikos Console';

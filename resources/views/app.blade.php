@@ -64,7 +64,8 @@
             <meta name="vapid-cle-publique" content="{{ config('webpush.cle_publique') }}">
         @endif
 
-        @routes
+        {{-- Les routes ne sont plus recopiées dans chaque page : un fichier versionné, mis en cache. --}}
+        <script src="{{ route('ziggy.js', ['v' => \App\Http\Controllers\ZiggyController::version()], false) }}"></script>
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
