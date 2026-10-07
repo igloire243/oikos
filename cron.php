@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Contracts\Console\Kernel;
+
 /**
  * LE POINT D'ENTRÉE DU PLANIFICATEUR POUR UN HÉBERGEMENT SANS LIGNE DE COMMANDE.
  *
@@ -18,4 +20,4 @@ require __DIR__.'/vendor/autoload.php';
 
 $app = require __DIR__.'/bootstrap/app.php';
 
-$app->make(Illuminate\Contracts\Console\Kernel::class)->call('schedule:run');
+$app->make(Kernel::class)->call('schedule:run');
