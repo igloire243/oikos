@@ -204,6 +204,12 @@ return [
                 'vendable' => true,
                 'texte' => "Photos, vidéos et publications de la page publique de l'antenne.",
             ],
+            'antenne.evenements' => [
+                'nom' => "Événements de l'antenne",
+                'icone' => 'party-popper',
+                'vendable' => true,
+                'texte' => "Organiser un réveillon ou une campagne d'évangélisation à l'échelle de l'antenne : programme, tâches, affiche et choix du lieu.",
+            ],
             'antenne.messagerie' => [
                 'nom' => 'Messagerie interne',
                 'icone' => 'messages-square',
