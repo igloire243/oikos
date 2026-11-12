@@ -1,0 +1,41 @@
+# Le contrôle de la console : le catalogue des modules doit dire la même chose que celui du produit.
+#
+# POURQUOI : les clés des modules voyagent dans la licence ; une clé qui diffère d'un caractère donne un module
+# vendu et jamais ouvert, et le défaut ne se voit que chez le client. Ce workflow NE déploie rien.
+name: Vérifier
+
+on:
+  push:
+    branches: [master, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  catalogue:
+    name: Catalogue et offres
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+          extensions: sqlite3, pdo_sqlite, mbstring, intl
+
+      - name: Dépendances PHP
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Catalogue (obligatoire)
+        run: php artisan test tests/Feature/CatalogueTest.php
+
+      # Informatif : le reste de la suite n'a jamais tourné en CI sur ce dépôt.
+      - name: Toute la suite (informatif)
+        run: php artisan test
+        continue-on-error: true

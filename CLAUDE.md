@@ -38,3 +38,15 @@ php artisan oikos:admin
 php artisan oikos:cles-signature
 php artisan optimize:clear && npm run dev
 ```
+
+## Le catalogue des modules (version 2 du produit)
+
+- **Source unique : `resources/catalogue/modules.json`**, la copie exacte du catalogue du produit (`docs/console/modules.json`
+  du dépôt `Mgj`, régénéré par `php artisan modules:exporter`). Il ne se retouche jamais à la main : on le recopie.
+  `config/modules.php` le lit ; seuls les textes commerciaux (`resources/catalogue/textes.php`) sont à nous.
+- Quatre espaces se vendent : `vision`, `antenne`, `extension`, `departement` (les anciennes clés `superadmin.*`, `secteur.*`,
+  `department.*` n'existent plus ; la migration `traduit_les_cles_des_modules_dans_les_plans` les a reportées en base).
+- `tests/Feature/CatalogueTest.php` verrouille l'empreinte, les textes et que chaque offre n'utilise que des clés vendables
+  (workflow `Vérifier`). Les modules nouveaux n'entrent que dans les paliers Premium de `PlanSeeder` : décision commerciale
+  par défaut, à revoir.
+

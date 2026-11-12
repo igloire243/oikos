@@ -41,7 +41,7 @@ class SiteController extends Controller
             // Les modules de l'espace d'une église : c'est ce qu'un visiteur reconnaît. Ceux de
             // la vision parlent d'un siège de réseau, et n'ont de sens qu'une fois qu'on sait de
             // quel produit on parle.
-            'modulesEntite' => Modules::espace('secteur'),
+            'modulesEntite' => Modules::espace('extension'),
             // On annonce les modules VENDABLES : compter les paramètres et la gestion des comptes
             // gonflerait le chiffre avec des pages que personne n'achète.
             'nombreModules' => count(Modules::vendables()),
@@ -65,7 +65,7 @@ class SiteController extends Controller
             // espaces qui ne s'adressent pas aux mêmes personnes.
             // L'ordre compte : l'espace d'une église d'abord — c'est celui que le visiteur
             // reconnaît —, puis la vision, puis les espaces intermédiaires.
-            'familles' => collect(['secteur', 'superadmin', 'antenne', 'department'])
+            'familles' => collect(['extension', 'vision', 'antenne', 'departement'])
                 ->mapWithKeys(fn ($espace) => [$espace => Modules::espace($espace)])
                 ->all(),
             'nomsFamilles' => collect(Modules::espaces())->map(fn ($e) => $e['libelle'])->all(),

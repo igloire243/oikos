@@ -7,8 +7,8 @@ use App\Models\Plan;
 /**
  * LE CATALOGUE DES MODULES, LU AU BON ENDROIT.
  *
- * Six espaces vivent dans config/modules.php, et ce fichier doit rester le miroir exact de
- * app/Support/Modules.php côté Génération Joël : ce sont ces clés qui voyagent dans la licence.
+ * Quatre espaces vivent dans config/modules.php, qui lit resources/catalogue/modules.json — la copie exacte de
+ * `App\Metier\Acces\Modules` côté Génération Joël : ce sont ces clés qui voyagent dans la licence.
  * Une clé qui diffère d'un caractère entre les deux côtés produit un module vendu et jamais ouvert,
  * et le défaut ne se voit qu'à l'usage, chez le client.
  *
@@ -26,16 +26,16 @@ class Modules
      *
      *   LICENCE  → l'espace de la vision seul. Elle allume le système et ouvre le siège ; ce que
      *              font les entités en dessous relève de leurs propres accès.
-     *   ACCES    → les espaces d'exploitation : antenne, église, département, commission. Une
+     *   ACCES    → les espaces d'exploitation : antenne, église (`extension`), département. Une
      *              antenne et une cellule achètent le même palier, elles n'ouvrent simplement pas
      *              les mêmes pages.
      *   COMBINEE → tout. Une église seule EST sa propre vision : son installation a un compte
-     *              superadmin, et il serait faux de lui refuser l'espace qu'elle possède forcément.
+     *              de la Vision, et il serait faux de lui refuser l'espace qu'elle possède forcément.
      */
     public const ESPACES_PAR_NATURE = [
-        Plan::LICENCE => ['superadmin'],
-        Plan::ACCES => ['antenne', 'secteur', 'department', 'commission'],
-        Plan::COMBINEE => ['superadmin', 'antenne', 'secteur', 'department', 'commission'],
+        Plan::LICENCE => ['vision'],
+        Plan::ACCES => ['antenne', 'extension', 'departement'],
+        Plan::COMBINEE => ['vision', 'antenne', 'extension', 'departement'],
     ];
 
     /** @return array<string, array{libelle:string, modules:array}> */
@@ -55,7 +55,7 @@ class Modules
         return self::espaces()[$espace]['modules'] ?? [];
     }
 
-    /** Tous les modules des six espaces, à plat. Les clés portant leur espace, rien ne se chevauche. */
+    /** Tous les modules des quatre espaces, à plat. Les clés portant leur espace, rien ne se chevauche. */
     public static function toutes(): array
     {
         $tous = [];
@@ -123,5 +123,20 @@ class Modules
         $vendables = array_keys(self::vendables());
 
         return array_values(array_intersect($fonctionnalites, $vendables));
+    }
+
+    /**
+     * L'EMPREINTE DU CATALOGUE — le SHA-256 des clés triées, une par ligne.
+     *
+     * Le produit calcule la même sur son catalogue (`Modules::empreinte()`) et l'écrit dans
+     * resources/catalogue/modules.json : une clé ajoutée d'un seul côté se voit au test, au lieu de se
+     * découvrir chez le client. Les deux calculs doivent rester identiques au caractère près.
+     */
+    public static function calculerEmpreinte(): string
+    {
+        $cles = array_keys(self::toutes());
+        sort($cles);
+
+        return hash('sha256', implode("\n", $cles));
     }
 }

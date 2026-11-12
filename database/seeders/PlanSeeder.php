@@ -28,7 +28,7 @@ use Illuminate\Database\Seeder;
  *             elle). Quotas verrouillés : 0 antenne, 1 extension.
  *
  * LES CLÉS DE FONCTIONNALITÉS sont celles de config/modules.php, et elles portent leur espace :
- * `superadmin.reports` (vision) ≠ `secteur.rapports` (église) ≠ `antenne.rapports`. Seules les clés
+ * `vision.rapports` ≠ `extension.rapports` (église) ≠ `antenne.rapports` ≠ `departement.rapports`. Seules les clés
  * VENDABLES comptent ici (les invendables — paramètres, sécurité, messagerie déléguable — sont
  * toujours ouvertes et ignorées à l'émission de la licence).
  *
@@ -39,59 +39,86 @@ use Illuminate\Database\Seeder;
  */
 class PlanSeeder extends Seeder
 {
+    /*
+     * MISE À JOUR DU CATALOGUE (version 2 du produit). Les clés ont changé de nom (`superadmin.*` → `vision.*`,
+     * `secteur.*` → `extension.*`, `department.*` → `departement.*`) et le catalogue s'est élargi.
+     *
+     * Deux règles, dont la seconde est une DÉCISION COMMERCIALE par défaut, à revoir :
+     *   · ce qui était ouvert hier le reste, à tous les paliers : la messagerie de chaque espace (qui était
+     *     invendable et est devenue vendable) et l'espace personnel des fidèles ;
+     *   · les modules NOUVEAUX et vendables n'entrent que dans les paliers PREMIUM.
+     */
     // ---- ESPACE VISION (LICENCE + COMBINÉE) ------------------------------------------------
     private const VISION_STARTER = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
-        'superadmin.communications',
+        'vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports',
+        'vision.communications',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'vision.messagerie',
     ];
     private const VISION_STANDARD = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.programs', 'superadmin.reports',
-        'superadmin.communications', 'superadmin.media', 'superadmin.finances',
+        'vision.comptes', 'vision.entites', 'vision.programmes', 'vision.rapports',
+        'vision.communications', 'vision.medias', 'vision.finances',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'vision.messagerie',
     ];
     private const VISION_PREMIUM = [
-        'superadmin.users', 'superadmin.entites', 'superadmin.transferts', 'superadmin.profils',
-        'superadmin.programs', 'superadmin.finances', 'superadmin.reports',
-        'superadmin.communications', 'superadmin.media',
+        'vision.comptes', 'vision.entites', 'vision.transferts', 'vision.profils',
+        'vision.programmes', 'vision.finances', 'vision.rapports',
+        'vision.communications', 'vision.medias',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'vision.messagerie', 'vision.membres', 'vision.export', 'vision.evenements', 'vision.commissions', 'vision.comite', 'vision.assemblee', 'vision.bilan_annuel', 'vision.missions', 'vision.projets',
     ];
 
     // ---- ACCÈS ÉGLISE / CELLULE : espace de l'église + espace Département ------------------
     private const EGLISE_STARTER = [
-        'secteur.membres', 'secteur.cultes', 'secteur.tresorerie', 'secteur.rapports',
-        'secteur.equipes', 'secteur.messagerie',
-        'department.equipe', 'department.plannings', 'department.rapports',
+        'extension.membres', 'extension.cultes', 'extension.tresorerie', 'extension.rapports',
+        'extension.equipes', 'extension.messagerie',
+        'departement.equipe', 'departement.plannings', 'departement.rapports',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'extension.espace_membre', 'departement.messagerie',
     ];
     private const EGLISE_STANDARD = [
-        'secteur.membres', 'secteur.cultes', 'secteur.tresorerie', 'secteur.rapports',
-        'secteur.equipes', 'secteur.messagerie', 'secteur.programmes', 'secteur.prieres',
-        'secteur.visites', 'secteur.activites', 'secteur.discipulariat', 'secteur.medias',
-        'secteur.discipline',
-        'department.equipe', 'department.plannings', 'department.rapports',
-        'department.programmes', 'department.ressources',
+        'extension.membres', 'extension.cultes', 'extension.tresorerie', 'extension.rapports',
+        'extension.equipes', 'extension.messagerie', 'extension.programmes', 'extension.prieres',
+        'extension.visites', 'extension.activites', 'extension.discipulariat', 'extension.medias',
+        'extension.discipline',
+        'departement.equipe', 'departement.plannings', 'departement.rapports',
+        'departement.programmes', 'departement.ressources',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'extension.espace_membre', 'departement.messagerie',
     ];
     private const EGLISE_PREMIUM = [
-        'secteur.membres', 'secteur.transferts', 'secteur.visites', 'secteur.prieres',
-        'secteur.cultes', 'secteur.programmes', 'secteur.activites', 'secteur.discipulariat',
-        'secteur.equipes', 'secteur.discipline', 'secteur.tresorerie', 'secteur.rapports',
-        'secteur.medias', 'secteur.messagerie',
-        'department.equipe', 'department.plannings', 'department.programmes', 'department.rapports',
-        'department.ressources',
+        'extension.membres', 'extension.transferts', 'extension.visites', 'extension.prieres',
+        'extension.cultes', 'extension.programmes', 'extension.activites', 'extension.discipulariat',
+        'extension.equipes', 'extension.discipline', 'extension.tresorerie', 'extension.rapports',
+        'extension.medias', 'extension.messagerie',
+        'departement.equipe', 'departement.plannings', 'departement.programmes', 'departement.rapports',
+        'departement.ressources',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'extension.espace_membre', 'departement.messagerie', 'extension.communications', 'extension.programme_annuel', 'extension.formations', 'extension.inventaire',
     ];
 
     // ---- ACCÈS ANTENNE ------------------------------------------------------------------------
     private const ANTENNE_STARTER = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports',
         'antenne.services', 'antenne.communications',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'antenne.messagerie',
     ];
     private const ANTENNE_STANDARD = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.rapports',
-        'antenne.services', 'antenne.communications', 'antenne.pastoral', 'antenne.visites',
+        'antenne.services', 'antenne.communications', 'antenne.prieres', 'antenne.visites',
         'antenne.reunions', 'antenne.departements', 'antenne.finances', 'antenne.medias',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'antenne.messagerie',
     ];
     private const ANTENNE_PREMIUM = [
         'antenne.extensions', 'antenne.bergers', 'antenne.membres', 'antenne.transferts',
-        'antenne.pastoral', 'antenne.visites', 'antenne.services', 'antenne.departements',
+        'antenne.prieres', 'antenne.visites', 'antenne.services', 'antenne.departements',
         'antenne.finances', 'antenne.rapports', 'antenne.reunions', 'antenne.dossiers',
         'antenne.communications', 'antenne.medias',
+        // Ajouts de la mise à jour du catalogue (voir le bloc de tête)
+        'antenne.messagerie', 'antenne.supervision', 'antenne.formations', 'antenne.delegations', 'antenne.inventaire', 'antenne.export', 'antenne.trimestre', 'antenne.missions', 'antenne.programme_annuel', 'antenne.evenements',
     ];
 
     public function run(): void
